@@ -1,0 +1,2 @@
+# BitvavoBot
+Angular application / playground
