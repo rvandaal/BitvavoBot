@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { BitvavoService } from 'src/bitvavo.service';
 import { Balance } from 'src/models/balance';
+import { TradeHistory } from 'src/models/trade-history';
 
 @Component({
   selector: 'app-root',
@@ -9,11 +10,16 @@ import { Balance } from 'src/models/balance';
 })
 export class AppComponent {
   public balance: Balance | undefined;
+  public tradeHistory: TradeHistory | undefined;
   title = 'BitvavoBot';
 
   constructor(bitvavoService: BitvavoService) {
     const balanceList = bitvavoService.getBalance().then(bl => {
       this.balance = bl;
+    });
+
+    const tradeHistoryList = bitvavoService.getTradeHistory().then(th => {
+      this.tradeHistory = th;
     });
   }
 }

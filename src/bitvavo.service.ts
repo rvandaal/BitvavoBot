@@ -1,6 +1,8 @@
 import { Injectable } from '@angular/core';
 import { Balance } from './models/balance';
 import { BalanceItem } from './models/balance-item';
+import { TradeHistory } from './models/trade-history';
+import { TradeHistoryItem } from './models/trade-history-item';
 declare var require: any;
 const {bitvavo, websocketSetListeners} = require('./bitvavo-api');
 
@@ -14,20 +16,13 @@ export class BitvavoService {
   constructor() { }
 
   public async getBalance(): Promise<Balance | undefined>{
-    // try {
-    //   const response = await bitvavo.time();
-    //   console.log(response);
-    // } catch (error) {
-    //   console.log(error);
-    // }
-
     try {
-      const balanceList: BalanceItem[] = [];
+      const list: BalanceItem[] = [];
       const response = await bitvavo.balance({});
       for (let entry of response) {
-        balanceList.push(new BalanceItem(entry));
+        list.push(new BalanceItem(entry));
       }
-      return new Balance(balanceList);
+      return new Balance(list);
     } catch (error) {
       console.log(error);
     }
@@ -41,5 +36,21 @@ export class BitvavoService {
     //     console.log(error)
     //   }
     // })
+  }
+
+  public async getTradeHistory(): Promise<TradeHistory | undefined> {
+    try {
+      const list: TradeHistoryItem[] = [];
+      const response = await bitvavo.trades('ONG-EUR', {});
+      console.log(response);
+      for (let entry of response) {
+        list.push(new TradeHistoryItem(entry));
+      }
+      return new TradeHistory(list);
+    } catch (error) {
+      console.log(error);
+    }
+
+    return undefined;
   }
 }
