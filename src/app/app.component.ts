@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { BitvavoService } from 'src/bitvavo.service';
+import { Balance } from 'src/models/balance';
 
 @Component({
   selector: 'app-root',
@@ -7,11 +8,12 @@ import { BitvavoService } from 'src/bitvavo.service';
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent {
+  public balance: Balance | undefined;
   title = 'BitvavoBot';
 
   constructor(bitvavoService: BitvavoService) {
     const balanceList = bitvavoService.getBalance().then(bl => {
-      console.log(bl);
+      this.balance = bl;
     });
   }
 }
