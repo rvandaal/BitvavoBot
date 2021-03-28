@@ -5,7 +5,11 @@ export class BalanceItem {
 
     constructor(item: any) {
         this.symbol = item.symbol;
-        this.available = item.available;
-        this.inOrder = item.inOrder;
+        this.available = +item.available;
+        this.inOrder = +item.inOrder;
+    }
+
+    public get totalAmount(): number {
+        return this.available + this.inOrder;
     }
 }

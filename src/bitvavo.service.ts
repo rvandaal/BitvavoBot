@@ -1,4 +1,6 @@
 import { Injectable } from '@angular/core';
+import { Asset } from './models/asset';
+import { Assets } from './models/assets';
 import { Balance } from './models/balance';
 import { BalanceItem } from './models/balance-item';
 import { TradeHistory } from './models/trade-history';
@@ -47,6 +49,22 @@ export class BitvavoService {
         list.push(new TradeHistoryItem(entry));
       }
       return new TradeHistory(list);
+    } catch (error) {
+      console.log(error);
+    }
+
+    return undefined;
+  }
+
+  public async getAssets(): Promise<Assets | undefined> {
+    try {
+      const list: Asset[] = [];
+      const response = await bitvavo.assets({});
+      console.log(response);
+      for (let entry of response) {
+        list.push(new Asset(entry));
+      }
+      return new Assets(list);
     } catch (error) {
       console.log(error);
     }

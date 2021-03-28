@@ -8,9 +8,8 @@
             <tr class="d-flex">
               <th scope="col" style="width: 5%">#</th>
               <th scope="col" style="width: 5%"></th>
-              <th scope="col" style="width: 30%">Symbol</th>
-              <th scope="col" style="width: 30%">Available</th>
-              <th scope="col" style="width: 30%">InOrder</th>
+              <th scope="col" style="width: 50%">Valuta</th>
+              <th scope="col" style="width: 40%">Hoeveelheid</th>
             </tr>
           </thead>
           <tbody>
@@ -23,9 +22,8 @@
             <td style="width: 5%">
               <i style="margin: -4px 0 0 0" class="icn" [ngClass]="'icn-' + balanceItem.symbol.toLowerCase()"></i>
             </td>
-            <td style="width: 30%">{{ balanceItem.symbol }}</td>
-            <td style="width: 30%">{{ balanceItem.available | number }}</td>
-            <td style="width: 30%">{{ balanceItem.inOrder | number }}</td>
+            <td style="width: 50%">{{getAssetName(balanceItem.symbol)}} ({{ balanceItem.symbol }})</td>
+            <td style="width: 40%">{{ balanceItem.totalAmount | number }}</td>
           </tr>
           </tbody>
         </table>

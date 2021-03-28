@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { BitvavoService } from 'src/bitvavo.service';
+import { Assets } from 'src/models/assets';
 import { Balance } from 'src/models/balance';
 import { TradeHistory } from 'src/models/trade-history';
 
@@ -11,16 +12,29 @@ import { TradeHistory } from 'src/models/trade-history';
 export class AppComponent {
   public balance: Balance | undefined;
   public tradeHistory: TradeHistory | undefined;
+  public assets: Assets | undefined;
+
   title = 'BitvavoBot';
 
   constructor(bitvavoService: BitvavoService) {
-    const balanceList = bitvavoService.getBalance().then(bl => {
+    bitvavoService.getAssets().then(a => {
+      this.assets = a;
+    });
+
+    bitvavoService.getBalance().then(bl => {
       this.balance = bl;
     });
 
-    const tradeHistoryList = bitvavoService.getTradeHistory().then(th => {
+    bitvavoService.getTradeHistory().then(th => {
       this.tradeHistory = th;
     });
+  }
+
+  public getAssetName(symbol: string): string | undefined {
+    if(this.assets) {
+      return this.assets.list.find(a => a.symbol.toLowerCase() === symbol.toLowerCase())?.name;
+    }
+    return undefined;
   }
 }
 
