@@ -1,0 +1,618 @@
+.icn {
+    background-image: url('xs.png');
+    background-repeat: no-repeat;
+	display: block;
+	background-size: 320px 320px;
+}
+
+.icn-aave {
+    width: 32px;
+    height: 32px;
+    background-position: 0 0;
+}
+
+.icn-ada {
+    width: 32px;
+    height: 32px;
+    background-position: -32px 0;
+}
+
+.icn-ae {
+    width: 32px;
+    height: 32px;
+    background-position: -64px 0;
+}
+
+.icn-aion {
+    width: 32px;
+    height: 32px;
+    background-position: -96px 0;
+}
+
+.icn-ant {
+    width: 32px;
+    height: 32px;
+    background-position: -128px 0;
+}
+
+.icn-ark {
+    width: 32px;
+    height: 32px;
+    background-position: -160px 0;
+}
+
+.icn-bal {
+    width: 32px;
+    height: 32px;
+    background-position: -192px 0;
+}
+
+.icn-band {
+    width: 32px;
+    height: 32px;
+    background-position: -224px 0;
+}
+
+.icn-bat {
+    width: 32px;
+    height: 32px;
+    background-position: -256px 0;
+}
+
+.icn-bch {
+    width: 32px;
+    height: 32px;
+    background-position: -288px 0;
+}
+
+.icn-bsv {
+    width: 32px;
+    height: 32px;
+    background-position: 0 -32px;
+}
+
+.icn-btc {
+    width: 32px;
+    height: 32px;
+    background-position: -32px -32px;
+}
+
+.icn-btt {
+    width: 32px;
+    height: 32px;
+    background-position: -64px -32px;
+}
+
+.icn-chz {
+    width: 32px;
+    height: 32px;
+    background-position: -96px -32px;
+}
+
+.icn-cmt {
+    width: 32px;
+    height: 32px;
+    background-position: -128px -32px;
+}
+
+.icn-comp {
+    width: 32px;
+    height: 32px;
+    background-position: -160px -32px;
+}
+
+.icn-dai {
+    width: 32px;
+    height: 32px;
+    background-position: -192px -32px;
+}
+
+.icn-dash {
+    width: 32px;
+    height: 32px;
+    background-position: -224px -32px;
+}
+
+.icn-dcr {
+    width: 32px;
+    height: 32px;
+    background-position: -256px -32px;
+}
+
+.icn-dgb {
+    width: 32px;
+    height: 32px;
+    background-position: -288px -32px;
+}
+
+.icn-dot {
+    width: 32px;
+    height: 32px;
+    background-position: 0 -64px;
+}
+
+.icn-elf {
+    width: 32px;
+    height: 32px;
+    background-position: -32px -64px;
+}
+
+.icn-enj {
+    width: 32px;
+    height: 32px;
+    background-position: -64px -64px;
+}
+
+.icn-eos {
+    width: 32px;
+    height: 32px;
+    background-position: -96px -64px;
+}
+
+.icn-etc {
+    width: 32px;
+    height: 32px;
+    background-position: -128px -64px;
+}
+
+.icn-eth {
+    width: 32px;
+    height: 32px;
+    background-position: -160px -64px;
+}
+
+.icn-eur {
+    width: 32px;
+    height: 32px;
+    background-position: -192px -64px;
+}
+
+.icn-fet {
+    width: 32px;
+    height: 32px;
+    background-position: -224px -64px;
+}
+
+.icn-gas {
+    width: 32px;
+    height: 32px;
+    background-position: -256px -64px;
+}
+
+.icn-gno {
+    width: 32px;
+    height: 32px;
+    background-position: -288px -64px;
+}
+
+.icn-gnt {
+    width: 32px;
+    height: 32px;
+    background-position: 0 -96px;
+}
+
+.icn-glm {
+    width: 32px;
+    height: 32px;
+    background-position: 0 -96px;
+}
+
+.icn-hot {
+    width: 32px;
+    height: 32px;
+    background-position: -32px -96px;
+}
+
+.icn-icx {
+    width: 32px;
+    height: 32px;
+    background-position: -64px -96px;
+}
+
+.icn-iost {
+    width: 32px;
+    height: 32px;
+    background-position: -96px -96px;
+}
+
+.icn-kava {
+    width: 32px;
+    height: 32px;
+    background-position: -128px -96px;
+}
+
+.icn-kmd {
+    width: 32px;
+    height: 32px;
+    background-position: -160px -96px;
+}
+
+.icn-knc {
+    width: 32px;
+    height: 32px;
+    background-position: -192px -96px;
+}
+
+.icn-link {
+    width: 32px;
+    height: 32px;
+    background-position: -224px -96px;
+}
+
+.icn-loom {
+    width: 32px;
+    height: 32px;
+    background-position: -256px -96px;
+}
+
+.icn-lrc {
+    width: 32px;
+    height: 32px;
+    background-position: -288px -96px;
+}
+
+.icn-lsk {
+    width: 32px;
+    height: 32px;
+    background-position: 0 -128px;
+}
+
+.icn-ltc {
+    width: 32px;
+    height: 32px;
+    background-position: -32px -128px;
+}
+
+.icn-mana {
+    width: 32px;
+    height: 32px;
+    background-position: -64px -128px;
+}
+
+.icn-matic {
+    width: 32px;
+    height: 32px;
+    background-position: -96px -128px;
+}
+
+.icn-miota {
+    width: 32px;
+    height: 32px;
+    background-position: -128px -128px;
+}
+
+.icn-mkr {
+    width: 32px;
+    height: 32px;
+    background-position: -160px -128px;
+}
+
+.icn-nano {
+    width: 32px;
+    height: 32px;
+    background-position: -192px -128px;
+}
+
+.icn-nas {
+    width: 32px;
+    height: 32px;
+    background-position: -224px -128px;
+}
+
+.icn-neo {
+    width: 32px;
+    height: 32px;
+    background-position: -256px -128px;
+}
+
+.icn-nmr {
+    width: 32px;
+    height: 32px;
+    background-position: -288px -128px;
+}
+
+.icn-npxs {
+    width: 32px;
+    height: 32px;
+    background-position: 0 -160px;
+}
+
+.icn-nuls {
+    width: 32px;
+    height: 32px;
+    background-position: -32px -160px;
+}
+
+.icn-ogn {
+    width: 32px;
+    height: 32px;
+    background-position: -64px -160px;
+}
+
+.icn-omg {
+    width: 32px;
+    height: 32px;
+    background-position: -96px -160px;
+}
+
+.icn-ong {
+    width: 32px;
+    height: 32px;
+    background-position: -128px -160px;
+}
+
+.icn-ont {
+    width: 32px;
+    height: 32px;
+    background-position: -160px -160px;
+}
+
+.icn-oxt {
+    width: 32px;
+    height: 32px;
+    background-position: -192px -160px;
+}
+
+.icn-paxg {
+    width: 32px;
+    height: 32px;
+    background-position: -224px -160px;
+}
+
+.icn-powr {
+    width: 32px;
+    height: 32px;
+    background-position: -256px -160px;
+}
+
+.icn-qtum {
+    width: 32px;
+    height: 32px;
+    background-position: -288px -160px;
+}
+
+.icn-rdd {
+    width: 32px;
+    height: 32px;
+    background-position: 0 -192px;
+}
+
+.icn-ren {
+    width: 32px;
+    height: 32px;
+    background-position: -32px -192px;
+}
+
+.icn-rep {
+    width: 32px;
+    height: 32px;
+    background-position: -64px -192px;
+}
+
+.icn-req {
+    width: 32px;
+    height: 32px;
+    background-position: -96px -192px;
+}
+
+.icn-rlc {
+    width: 32px;
+    height: 32px;
+    background-position: -128px -192px;
+}
+
+.icn-rsr {
+    width: 32px;
+    height: 32px;
+    background-position: -160px -192px;
+}
+
+.icn-rvn {
+    width: 32px;
+    height: 32px;
+    background-position: -192px -192px;
+}
+
+.icn-snt {
+    width: 32px;
+    height: 32px;
+    background-position: -224px -192px;
+}
+
+.icn-snx {
+    width: 32px;
+    height: 32px;
+    background-position: -256px -192px;
+}
+
+.icn-steem {
+    width: 32px;
+    height: 32px;
+    background-position: -288px -192px;
+}
+
+.icn-stmx {
+    width: 32px;
+    height: 32px;
+    background-position: 0 -224px;
+}
+
+.icn-storj {
+    width: 32px;
+    height: 32px;
+    background-position: -32px -224px;
+}
+
+.icn-storm {
+    width: 32px;
+    height: 32px;
+    background-position: -64px -224px;
+}
+
+.icn-strat, .icn-strax {
+    width: 32px;
+    height: 32px;
+    background-position: -96px -224px;
+}
+
+.icn-sub {
+    width: 32px;
+    height: 32px;
+    background-position: -128px -224px;
+}
+
+.icn-sushi {
+    width: 32px;
+    height: 32px;
+    background-position: -160px -224px;
+}
+
+.icn-sxp {
+    width: 32px;
+    height: 32px;
+    background-position: -192px -224px;
+}
+
+.icn-trb {
+    width: 32px;
+    height: 32px;
+    background-position: -224px -224px;
+}
+
+.icn-trx {
+    width: 32px;
+    height: 32px;
+    background-position: -256px -224px;
+}
+
+.icn-uma {
+    width: 32px;
+    height: 32px;
+    background-position: -288px -224px;
+}
+
+.icn-uni {
+    width: 32px;
+    height: 32px;
+    background-position: 0 -256px;
+}
+
+.icn-usdc {
+    width: 32px;
+    height: 32px;
+    background-position: -32px -256px;
+}
+
+.icn-usdt {
+    width: 32px;
+    height: 32px;
+    background-position: -64px -256px;
+}
+
+.icn-utk {
+    width: 32px;
+    height: 32px;
+    background-position: -96px -256px;
+}
+
+.icn-vet {
+    width: 32px;
+    height: 32px;
+    background-position: -128px -256px;
+}
+
+.icn-vtc {
+    width: 32px;
+    height: 32px;
+    background-position: -160px -256px;
+}
+
+.icn-vtho {
+    width: 32px;
+    height: 32px;
+    background-position: -192px -256px;
+}
+
+.icn-waves {
+    width: 32px;
+    height: 32px;
+    background-position: -224px -256px;
+}
+
+.icn-wtc {
+    width: 32px;
+    height: 32px;
+    background-position: -256px -256px;
+}
+
+.icn-xem {
+    width: 32px;
+    height: 32px;
+    background-position: -288px -256px;
+}
+
+.icn-xlm {
+    width: 32px;
+    height: 32px;
+    background-position: 0 -288px;
+}
+
+.icn-xmr {
+    width: 32px;
+    height: 32px;
+    background-position: -32px -288px;
+}
+
+.icn-xrp {
+    width: 32px;
+    height: 32px;
+    background-position: -64px -288px;
+}
+
+.icn-xtz {
+    width: 32px;
+    height: 32px;
+    background-position: -96px -288px;
+}
+
+.icn-xvg {
+    width: 32px;
+    height: 32px;
+    background-position: -128px -288px;
+}
+
+.icn-yfi {
+    width: 32px;
+    height: 32px;
+    background-position: -160px -288px;
+}
+
+.icn-yfii {
+    width: 32px;
+    height: 32px;
+    background-position: -192px -288px;
+}
+
+.icn-zec {
+    width: 32px;
+    height: 32px;
+    background-position: -224px -288px;
+}
+
+.icn-zil {
+    width: 32px;
+    height: 32px;
+    background-position: -256px -288px;
+}
+
+.icn-zrx {
+    width: 32px;
+    height: 32px;
+    background-position: -288px -288px;
+}
+
+@media only screen and (-webkit-min-device-pixel-ratio: 2), 
+only screen and (min-device-pixel-ratio: 2) {
+	.icn 
+	{  background-image: url('xl.png') !important; background-size: 320px 320px !important; }
+} 

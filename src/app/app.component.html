@@ -5,23 +5,27 @@
       <ng-template ngbNavContent>
         <table class="table table-striped" *ngIf="balance">
           <thead>
-          <tr>
-            <th scope="col">#</th>
-            <th scope="col">Symbol</th>
-            <th scope="col">Available</th>
-            <th scope="col">InOrder</th>
-          </tr>
+            <tr class="d-flex">
+              <th scope="col" style="width: 5%">#</th>
+              <th scope="col" style="width: 5%"></th>
+              <th scope="col" style="width: 30%">Symbol</th>
+              <th scope="col" style="width: 30%">Available</th>
+              <th scope="col" style="width: 30%">InOrder</th>
+            </tr>
           </thead>
           <tbody>
-          <tr *ngFor="let balanceItem of balance.noEmptyList; index as i">
-            <th scope="row">{{ i + 1 }}</th>
+          <tr *ngFor="let balanceItem of balance.noEmptyList; index as i" class="d-flex">
+            <th scope="row" style="width: 5%">{{ i + 1 }}</th>
             <!-- <td>
               <img [src]="'https://upload.wikimedia.org/wikipedia/commons/' + country.flag" class="mr-2" style="width: 20px">
               {{ country.name }}
             </td> -->
-            <td>{{ balanceItem.symbol }}</td>
-            <td>{{ balanceItem.available | number }}</td>
-            <td>{{ balanceItem.inOrder | number }}</td>
+            <td style="width: 5%">
+              <i style="margin: -4px 0 0 0" class="icn" [ngClass]="'icn-' + balanceItem.symbol.toLowerCase()"></i>
+            </td>
+            <td style="width: 30%">{{ balanceItem.symbol }}</td>
+            <td style="width: 30%">{{ balanceItem.available | number }}</td>
+            <td style="width: 30%">{{ balanceItem.inOrder | number }}</td>
           </tr>
           </tbody>
         </table>

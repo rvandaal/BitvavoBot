@@ -5,6 +5,7 @@ export class Balance {
 
     public get noEmptyList(): BalanceItem[] {
         const sortFunc = (a, b) => b.available - a.available;
-        return this.list.filter(bi => bi.available > 0).sort(sortFunc);
+        //return this.list.filter(bi => bi.available > 0).sort(sortFunc);
+        return this.list.sort(sortFunc);
     }
 }
