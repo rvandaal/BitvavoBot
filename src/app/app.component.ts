@@ -10,8 +10,9 @@ export class AppComponent {
   title = 'BitvavoBot';
 
   constructor(bitvavoService: BitvavoService) {
-    bitvavoService.getTime();
-    //console.log(testje.bitvavo);
+    const balanceList = bitvavoService.getBalance().then(bl => {
+      console.log(bl);
+    });
   }
 }
 
