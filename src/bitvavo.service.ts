@@ -40,10 +40,10 @@ export class BitvavoService {
     // })
   }
 
-  public async getTradeHistory(): Promise<TradeHistory | undefined> {
+  public async getTradeHistory(asset: Asset): Promise<TradeHistory | undefined> {
     try {
       const list: TradeHistoryItem[] = [];
-      const response = await bitvavo.trades('ONG-EUR', {});
+      const response = await bitvavo.trades(asset.euroTradingPair, {});
       console.log(response);
       for (let entry of response) {
         list.push(new TradeHistoryItem(entry));

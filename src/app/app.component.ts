@@ -17,17 +17,37 @@ export class AppComponent {
   title = 'BitvavoBot';
 
   constructor(bitvavoService: BitvavoService) {
-    bitvavoService.getAssets().then(a => {
+    // bitvavoService.getAssets().then(a => {
+    //   this.assets = a;
+    // });
+    (async () => {
+      const a = await bitvavoService.getAssets();
       this.assets = a;
-    });
+      const b = await bitvavoService.getBalance();
+      this.balance = b;
+  
+      // bitvavoService.getBalance().then(bl => {
+      //   this.balance = bl;
+      // });
+  
+      if (this.balance && this.assets) {
+        for (let bi of this.balance.list) {
+          bi.asset = this.assets.getAsset(bi.symbol);
+          if (bi.asset) {
+            bi.asset.available = bi.available;
+            bi.asset.inOrder = bi.inOrder;
+            if (bi.totalAmount > 0) {
+              bitvavoService.getTradeHistory(bi.asset).then(th => {
+                if (th && bi.asset) {
+                  bi.asset.tradeHistory = th;
+                }
+              });
+            }
+          }
+        }
+      }
+    })();
 
-    bitvavoService.getBalance().then(bl => {
-      this.balance = bl;
-    });
-
-    bitvavoService.getTradeHistory().then(th => {
-      this.tradeHistory = th;
-    });
   }
 
   public getAssetName(symbol: string): string | undefined {

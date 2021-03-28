@@ -1,5 +1,8 @@
+import { Asset } from "./asset";
+
 export class BalanceItem {
     public readonly symbol: string;
+    public asset?: Asset;
     public readonly available: number;
     public readonly inOrder: number;
 

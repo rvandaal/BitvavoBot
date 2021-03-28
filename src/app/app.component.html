@@ -3,27 +3,25 @@
     <li ngbNavItem>
       <a ngbNavLink>Balans</a>
       <ng-template ngbNavContent>
-        <table class="table table-striped" *ngIf="balance">
+        <table class="table table-striped" *ngIf="assets">
           <thead>
             <tr class="d-flex">
               <th scope="col" style="width: 5%">#</th>
               <th scope="col" style="width: 5%"></th>
-              <th scope="col" style="width: 50%">Valuta</th>
-              <th scope="col" style="width: 40%">Hoeveelheid</th>
+              <th scope="col" style="width: 30%">Valuta</th>
+              <th scope="col" style="width: 30%">Hoeveelheid</th>
+              <th scope="col" style="width: 30%">Investering</th>
             </tr>
           </thead>
           <tbody>
-          <tr *ngFor="let balanceItem of balance.noEmptyList; index as i" class="d-flex">
+          <tr *ngFor="let asset of assets.sortedList; index as i" class="d-flex">
             <th scope="row" style="width: 5%">{{ i + 1 }}</th>
-            <!-- <td>
-              <img [src]="'https://upload.wikimedia.org/wikipedia/commons/' + country.flag" class="mr-2" style="width: 20px">
-              {{ country.name }}
-            </td> -->
             <td style="width: 5%">
-              <i style="margin: -4px 0 0 0" class="icn" [ngClass]="'icn-' + balanceItem.symbol.toLowerCase()"></i>
+              <i style="margin: -4px 0 0 0" class="icn" [ngClass]="'icn-' + asset.symbol.toLowerCase()"></i>
             </td>
-            <td style="width: 50%">{{getAssetName(balanceItem.symbol)}} ({{ balanceItem.symbol }})</td>
-            <td style="width: 40%">{{ balanceItem.totalAmount | number }}</td>
+            <td style="width: 30%">{{asset.name}} <span class="symbol">{{ asset.symbol }}</span></td>
+            <td style="width: 30%">{{ asset.totalAmount | number }} <span class="symbol">{{ asset.symbol }}</span></td>
+            <td style="width: 30%">{{ asset.investment| number }} <span class="symbol">EUR</span></td>
           </tr>
           </tbody>
         </table>
@@ -46,10 +44,6 @@
           <tbody>
           <tr *ngFor="let tradeHistoryItem of tradeHistory.list; index as i" [ngClass]="tradeHistoryItem.isBuy ? 'table-success' : 'table-danger'">
             <th scope="row">{{ i + 1 }}</th>
-            <!-- <td>
-              <img [src]="'https://upload.wikimedia.org/wikipedia/commons/' + country.flag" class="mr-2" style="width: 20px">
-              {{ country.name }}
-            </td> -->
             <td>{{ tradeHistoryItem.market }}</td>
             <td>{{ tradeHistoryItem.isBuy ? 'Aankoop' : 'Verkoop' }}</td>
             <td>{{ tradeHistoryItem.date | date : 'medium' : 'nl-NL' }}</td>
@@ -80,10 +74,6 @@
           <tbody>
           <tr *ngFor="let tradeHistoryItem of tradeHistory.groupedList; index as i" [ngClass]="tradeHistoryItem.isBuy ? 'table-success' : 'table-danger'">
             <th scope="row">{{ i + 1 }}</th>
-            <!-- <td>
-              <img [src]="'https://upload.wikimedia.org/wikipedia/commons/' + country.flag" class="mr-2" style="width: 20px">
-              {{ country.name }}
-            </td> -->
             <td>{{ tradeHistoryItem.market }}</td>
             <td>{{ tradeHistoryItem.isBuy ? 'Aankoop' : 'Verkoop' }}</td>
             <td>{{ tradeHistoryItem.date | date : 'medium' : 'nl-NL' }}</td>
