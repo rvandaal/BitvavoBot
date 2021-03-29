@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { BitvavoService } from 'src/bitvavo.service';
+import { Asset } from 'src/models/asset';
 import { Assets } from 'src/models/assets';
 import { Balance } from 'src/models/balance';
 import { TradeHistory } from 'src/models/trade-history';
@@ -36,7 +37,7 @@ export class AppComponent {
           if (bi.asset) {
             bi.asset.available = bi.available;
             bi.asset.inOrder = bi.inOrder;
-            if (bi.totalAmount > 0) {
+            if (bi.symbol.toLowerCase() !== 'eur' && bi.totalAmount > 0) {
               bitvavoService.getTradeHistory(bi.asset).then(th => {
                 if (th && bi.asset) {
                   bi.asset.tradeHistory = th;
@@ -55,6 +56,11 @@ export class AppComponent {
       return this.assets.list.find(a => a.symbol.toLowerCase() === symbol.toLowerCase())?.name;
     }
     return undefined;
+  }
+
+  public onClickTableRow(asset: Asset): void {
+    console.log('Asset: ', asset);
+    this.tradeHistory = asset.tradeHistory;
   }
 }
 

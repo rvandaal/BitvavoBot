@@ -1,30 +1,69 @@
-<div>
+<nav>
   <ul ngbNav #nav="ngbNav" class="nav-tabs">
     <li ngbNavItem>
       <a ngbNavLink>Balans</a>
       <ng-template ngbNavContent>
-        <table class="table table-striped" *ngIf="assets">
-          <thead>
-            <tr class="d-flex">
-              <th scope="col" style="width: 5%">#</th>
-              <th scope="col" style="width: 5%"></th>
-              <th scope="col" style="width: 30%">Valuta</th>
-              <th scope="col" style="width: 30%">Hoeveelheid</th>
-              <th scope="col" style="width: 30%">Investering</th>
+        <div class="d-flex flex-row">
+          <table class="table table-striped flex-fill" *ngIf="assets">
+            <thead>
+              <tr class="d-flex">
+                <th scope="col" style="width: 5%">#</th>
+                <th scope="col" style="width: 5%"></th>
+                <th scope="col" style="width: 35%">Valuta</th>
+                <th scope="col" style="width: 25%">Hoeveelheid</th>
+                <th scope="col" style="width: 25%">Investering</th>
+                <th scope="col" style="width: 5%"></th>
+              </tr>
+            </thead>
+            <tbody>
+            <tr *ngFor="let asset of assets.sortedList; index as i" class="d-flex">
+              <th scope="row" style="width: 5%">{{ i + 1 }}</th>
+              <td style="width: 5%">
+                <i style="margin: -4px 0 0 0" class="icn" [ngClass]="'icn-' + asset.symbol.toLowerCase()"></i>
+              </td>
+              <td style="width: 35%">{{asset.name}} <span class="symbol">{{ asset.symbol }}</span></td>
+              <td style="width: 25%">{{ asset.totalAmount | number }} <span class="symbol">{{ asset.symbol }}</span></td>
+              <td style="width: 25%">{{ asset.investment| number }} <span class="symbol">EUR</span></td>
+              <td style="width: 5%">
+                <button class="btn btn-sm" style="padding: 3px 8px" (click)="onClickTableRow(asset)">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chevron-right" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd" d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708z"/>
+                  </svg>
+                </button>
+                <!-- <button class="btn btn-red" (click)="onClickTableRow(asset)">Hello</button> -->
+              </td>
             </tr>
-          </thead>
-          <tbody>
-          <tr *ngFor="let asset of assets.sortedList; index as i" class="d-flex">
-            <th scope="row" style="width: 5%">{{ i + 1 }}</th>
-            <td style="width: 5%">
-              <i style="margin: -4px 0 0 0" class="icn" [ngClass]="'icn-' + asset.symbol.toLowerCase()"></i>
-            </td>
-            <td style="width: 30%">{{asset.name}} <span class="symbol">{{ asset.symbol }}</span></td>
-            <td style="width: 30%">{{ asset.totalAmount | number }} <span class="symbol">{{ asset.symbol }}</span></td>
-            <td style="width: 30%">{{ asset.investment| number }} <span class="symbol">EUR</span></td>
-          </tr>
-          </tbody>
-        </table>
+            </tbody>
+          </table>
+          <table class="table table-striped flex-grow-1" *ngIf="tradeHistory">
+            <thead>
+            <tr>
+              <th scope="col">#</th>
+              <th scope="col">Market</th>
+              <th scope="col">Type</th>
+              <th scope="col">Date</th>
+              <th scope="col">Amount</th>
+              <th scope="col">Total Amount</th>
+              <th scope="col">Euro</th>
+              <th scope="col">Total Euro</th>
+              <th scope="col">Price</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr *ngFor="let tradeHistoryItem of tradeHistory.groupedList; index as i" [ngClass]="tradeHistoryItem.isBuy ? 'table-success' : 'table-danger'">
+              <th scope="row">{{ i + 1 }}</th>
+              <td>{{ tradeHistoryItem.market }}</td>
+              <td>{{ tradeHistoryItem.isBuy ? 'Aankoop' : 'Verkoop' }}</td>
+              <td>{{ tradeHistoryItem.date | date : 'medium' : 'nl-NL' }}</td>
+              <td>{{ tradeHistoryItem.amount | number }}</td>
+              <td>{{ tradeHistoryItem.totalAmount | number }}</td>
+              <td>{{ tradeHistoryItem.euroAmount | number }}</td>
+              <td>{{ tradeHistoryItem.totalEuroAmount | number }}</td>
+              <td>{{ tradeHistoryItem.price | number }}</td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
       </ng-template>
     </li>
     <li ngbNavItem>
@@ -89,4 +128,4 @@
     </li>
   </ul>
   <div [ngbNavOutlet]="nav"></div>
-</div>
+</nav>
