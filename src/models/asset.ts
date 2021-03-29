@@ -37,4 +37,8 @@ export class Asset {
     public get totalAmount(): number {
         return this.available + this.inOrder;
     }
+
+    public get currentValue(): number {
+        return this.totalAmount * this.currentPrice;
+    }
 }
