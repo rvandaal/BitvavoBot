@@ -6,7 +6,7 @@
         <div class="d-flex flex-row">
           <table class="table table-striped flex-fill" *ngIf="assets">
             <thead>
-              <tr class="d-flex">
+              <tr>
                 <th scope="col" style="width: 5%">#</th>
                 <th scope="col" style="width: 5%"></th>
                 <th scope="col" style="width: 25%">Valuta</th>
@@ -18,7 +18,7 @@
               </tr>
             </thead>
             <tbody>
-            <tr *ngFor="let asset of assets.sortedList; index as i" class="d-flex">
+            <tr *ngFor="let asset of assets.sortedList; index as i">
               <th scope="row" style="width: 5%">{{ i + 1 }}</th>
               <td style="width: 5%">
                 <i style="margin: -4px 0 0 0" class="icn" [ngClass]="'icn-' + asset.symbol.toLowerCase()"></i>
@@ -42,19 +42,19 @@
             </tr>
             </tbody>
           </table>
-          <table class="table table-striped flex-grow-1" *ngIf="trades">
+          <table class="table table-striped flex-fill" *ngIf="trades">
             <thead>
-            <tr>
-              <th scope="col">#</th>
-              <th scope="col">Market</th>
-              <th scope="col">Type</th>
-              <th scope="col">Date</th>
-              <th scope="col">Amount</th>
-              <th scope="col">Total Amount</th>
-              <th scope="col">Euro</th>
-              <th scope="col">Total Euro</th>
-              <th scope="col">Price</th>
-            </tr>
+              <tr>
+                <th scope="col">#</th>
+                <th scope="col">Market</th>
+                <th scope="col">Type</th>
+                <th scope="col">Date</th>
+                <th scope="col">Amount</th>
+                <th scope="col">Total Amount</th>
+                <th scope="col">Euro</th>
+                <th scope="col">Total Euro</th>
+                <th scope="col">Price</th>
+              </tr>
             </thead>
             <tbody>
             <tr *ngFor="let trade of trades.groupedList; index as i" [ngClass]="trade.isBuy ? 'table-success' : 'table-danger'">
@@ -62,11 +62,11 @@
               <td>{{ trade.market }}</td>
               <td>{{ trade.isBuy ? 'Aankoop' : 'Verkoop' }}</td>
               <td>{{ trade.date | date : 'medium' : 'nl-NL' }}</td>
-              <td>{{ trade.amount | number }}</td>
-              <td>{{ trade.totalAmount | number }}</td>
-              <td>{{ trade.euroAmount | number }}</td>
-              <td>{{ trade.totalEuroAmount | number }}</td>
-              <td>{{ trade.price | number }}</td>
+              <td>{{ trade.amount | number: '0.0-4' }}</td>
+              <td>{{ trade.totalAmount | number: '0.0-4' }}</td>
+              <td>{{ trade.euroAmount | number: '0.2-2' }}</td>
+              <td>{{ trade.totalEuroAmount | number: '0.2-2' }}</td>
+              <td>{{ trade.price | number: '0.2-2' }}</td>
             </tr>
             </tbody>
           </table>

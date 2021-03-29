@@ -3,3 +3,36 @@
     font-size: 10pt;
     margin-left: 5px;
 }
+
+.table-scrollable {
+    /* set the height to enable overflow of the table */
+    max-height: 900px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+}
+
+thead th {
+    border: none;
+}
+
+thead th {
+    /* Set header to stick to the top of the container. */
+    position: sticky; 
+    top: 0px;
+    
+    /* This is needed otherwise the sticky header will be transparent 
+    */
+    background-color: white;
+
+    /* Because bootstrap adds `border-collapse: collapse` to the
+     * table, the header boarders aren't sticky.
+     * So, we need to make some adjustments to cover up the actual
+     * header borders and created fake borders instead
+     */
+    margin-top: -1px;
+    margin-bottom: -1px;
+
+    /* This is our fake border (see above comment) */
+    box-shadow: inset 0 1px 0 #dee2e6,
+                inset 0 -1px 0 #dee2e6;
+}
