@@ -1,11 +1,18 @@
-import { BalanceItem } from './balance-item';
+import { Asset } from "./asset";
 
 export class Balance {
-    constructor(public readonly list: BalanceItem[]) { }
+    public readonly symbol: string;
+    public asset?: Asset;
+    public readonly available: number;
+    public readonly inOrder: number;
 
-    public get noEmptyList(): BalanceItem[] {
-        const sortFunc = (a, b) => b.available - a.available;
-        //return this.list.filter(bi => bi.available > 0).sort(sortFunc);
-        return this.list.sort(sortFunc);
+    constructor(item: any) {
+        this.symbol = item.symbol;
+        this.available = +item.available;
+        this.inOrder = +item.inOrder;
+    }
+
+    public get totalAmount(): number {
+        return this.available + this.inOrder;
     }
 }

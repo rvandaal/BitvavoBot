@@ -1,7 +1,7 @@
-import { TradeHistory } from './trade-history';
+import { Trades } from './trades';
 
 export class Asset {
-    private _tradingHistory?: TradeHistory;
+    private _tradingHistory?: Trades;
 
     public readonly symbol: string;
     public readonly name: string;
@@ -19,11 +19,11 @@ export class Asset {
         this.currentPrice = 0;
     }
 
-    public get tradeHistory(): TradeHistory | undefined {
+    public get trades(): Trades | undefined {
         return this._tradingHistory;
     }
 
-    public set tradeHistory(value: TradeHistory | undefined) {
+    public set trades(value: Trades | undefined) {
         this._tradingHistory = value;
         if (this._tradingHistory) {
             this.investment = this._tradingHistory.groupedList[0].totalEuroAmount;

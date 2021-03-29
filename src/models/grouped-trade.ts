@@ -1,4 +1,4 @@
-export class GroupedTradeHistoryItem {
+export class GroupedTrade {
     public readonly market: string;
     public amount: number;
     public totalAmount: number;

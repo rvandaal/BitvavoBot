@@ -1,41 +1,41 @@
-import { GroupedTradeHistoryItem } from './grouped-trade-history-item';
-import { TradeHistoryItem } from './trade-history-item';
+import { GroupedTrade } from './grouped-trade';
+import { Trade } from './trade';
 
-export class TradeHistory {
-    public groupedList: GroupedTradeHistoryItem[];
+export class Trades {
+    public groupedList: GroupedTrade[];
 
-    constructor(public readonly list: TradeHistoryItem[]){
+    constructor(public readonly list: Trade[]){
         this.groupedList = [];
         this.updateGroupedList();
     }
 
     public updateGroupedList(): void {
-        const groupedList: GroupedTradeHistoryItem[] = [];
+        const groupedList: GroupedTrade[] = [];
         let currentDate: Date | undefined;
-        let groupedItem: GroupedTradeHistoryItem | undefined;
+        let groupedTrade: GroupedTrade | undefined;
 
         for (let entry of this.list) {
             const date = entry.date;
             if (!currentDate || Math.abs(date.getTime() - currentDate?.getTime()) > 1000) {
-                if (groupedItem) {
-                    groupedList.push(groupedItem);
+                if (groupedTrade) {
+                    groupedList.push(groupedTrade);
                 }
                 const euroAmount = entry.isBuy ?
                     (entry.amount * entry.price + entry.fee) :
                     ((entry.amount * entry.price - entry.fee));
-                groupedItem =
-                    new GroupedTradeHistoryItem(entry.market, entry.amount, entry.price, entry.isBuy, date, entry.fee, euroAmount);
+                groupedTrade =
+                    new GroupedTrade(entry.market, entry.amount, entry.price, entry.isBuy, date, entry.fee, euroAmount);
                 currentDate = date;
-            } else if (groupedItem) {
-                groupedItem.amount += entry.amount;
-                groupedItem.euroAmount += entry.isBuy ?
+            } else if (groupedTrade) {
+                groupedTrade.amount += entry.amount;
+                groupedTrade.euroAmount += entry.isBuy ?
                     (entry.amount * entry.price + entry.fee) :
                     (entry.amount * entry.price - entry.fee);
-                groupedItem.fee += entry.fee;
+                groupedTrade.fee += entry.fee;
             }
         }
-        if(groupedItem) {
-            groupedList.push(groupedItem);
+        if(groupedTrade) {
+            groupedList.push(groupedTrade);
         }
         // Compute totals
         for (let i = groupedList.length - 1; i >= 0; i--) {

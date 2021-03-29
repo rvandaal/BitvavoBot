@@ -2,8 +2,8 @@ import { Component } from '@angular/core';
 import { BitvavoService } from 'src/bitvavo.service';
 import { Asset } from 'src/models/asset';
 import { Assets } from 'src/models/assets';
-import { Balance } from 'src/models/balance';
-import { TradeHistory } from 'src/models/trade-history';
+import { Balances } from 'src/models/balances';
+import { Trades } from 'src/models/trades';
 
 @Component({
   selector: 'app-root',
@@ -11,8 +11,8 @@ import { TradeHistory } from 'src/models/trade-history';
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent {
-  public balance: Balance | undefined;
-  public tradeHistory: TradeHistory | undefined;
+  public balance: Balances | undefined;
+  public trades: Trades | undefined;
   public assets: Assets | undefined;
   public assetWhichDetailsAreOpen: Asset | undefined;
 
@@ -39,7 +39,7 @@ export class AppComponent {
             bi.asset.available = bi.available;
             bi.asset.inOrder = bi.inOrder;
             if (bi.totalAmount > 0) {
-              this.updateTradeHistory(bi.asset);
+              this.updateTrades(bi.asset);
             }
           }
         }
@@ -77,26 +77,26 @@ export class AppComponent {
 
   public onClickTableRow(asset: Asset): void {
     (async () => {
-      if (!asset.tradeHistory) {
-        await this.updateTradeHistory(asset);
+      if (!asset.trades) {
+        await this.updateTrades(asset);
       }
       if (!this.assetWhichDetailsAreOpen || this.assetWhichDetailsAreOpen !== asset) {
-        this.tradeHistory = asset.tradeHistory;
+        this.trades = asset.trades;
         this.assetWhichDetailsAreOpen = asset;
       } else {
-        this.tradeHistory = undefined;
+        this.trades = undefined;
         this.assetWhichDetailsAreOpen = undefined;
       }
     })();
   }
 
-  private async updateTradeHistory(asset: Asset): Promise<TradeHistory | undefined> {
+  private async updateTrades(asset: Asset): Promise<Trades | undefined> {
     if (asset.symbol.toLowerCase() !== 'eur') {
-      const tradeHistory = await this.bitvavoService.getTradeHistory(asset);
-      if (tradeHistory && asset) {
-        asset.tradeHistory = tradeHistory;
+      const trades = await this.bitvavoService.getTrades(asset);
+      if (trades && asset) {
+        asset.trades = trades;
       }
-      return tradeHistory;
+      return trades;
     }
     return undefined;
   }
