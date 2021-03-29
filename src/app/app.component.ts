@@ -14,10 +14,11 @@ export class AppComponent {
   public balance: Balance | undefined;
   public tradeHistory: TradeHistory | undefined;
   public assets: Assets | undefined;
+  public assetWhichDetailsAreOpen: Asset | undefined;
 
   title = 'BitvavoBot';
 
-  constructor(bitvavoService: BitvavoService) {
+  constructor(private bitvavoService: BitvavoService) {
     // bitvavoService.getAssets().then(a => {
     //   this.assets = a;
     // });
@@ -37,12 +38,8 @@ export class AppComponent {
           if (bi.asset) {
             bi.asset.available = bi.available;
             bi.asset.inOrder = bi.inOrder;
-            if (bi.symbol.toLowerCase() !== 'eur' && bi.totalAmount > 0) {
-              bitvavoService.getTradeHistory(bi.asset).then(th => {
-                if (th && bi.asset) {
-                  bi.asset.tradeHistory = th;
-                }
-              });
+            if (bi.totalAmount > 0) {
+              this.updateTradeHistory(bi.asset);
             }
           }
         }
@@ -79,8 +76,29 @@ export class AppComponent {
   }
 
   public onClickTableRow(asset: Asset): void {
-    console.log('Asset: ', asset);
-    this.tradeHistory = asset.tradeHistory;
+    (async () => {
+      if (!asset.tradeHistory) {
+        await this.updateTradeHistory(asset);
+      }
+      if (!this.assetWhichDetailsAreOpen || this.assetWhichDetailsAreOpen !== asset) {
+        this.tradeHistory = asset.tradeHistory;
+        this.assetWhichDetailsAreOpen = asset;
+      } else {
+        this.tradeHistory = undefined;
+        this.assetWhichDetailsAreOpen = undefined;
+      }
+    })();
+  }
+
+  private async updateTradeHistory(asset: Asset): Promise<TradeHistory | undefined> {
+    if (asset.symbol.toLowerCase() !== 'eur') {
+      const tradeHistory = await this.bitvavoService.getTradeHistory(asset);
+      if (tradeHistory && asset) {
+        asset.tradeHistory = tradeHistory;
+      }
+      return tradeHistory;
+    }
+    return undefined;
   }
 }
 

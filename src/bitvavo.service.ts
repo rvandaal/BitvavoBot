@@ -46,7 +46,6 @@ export class BitvavoService {
     try {
       const list: TradeHistoryItem[] = [];
       const response = await bitvavo.trades(asset.euroTradingPair, {});
-      console.log(response);
       for (let entry of response) {
         list.push(new TradeHistoryItem(entry));
       }
@@ -62,7 +61,6 @@ export class BitvavoService {
     try {
       const list: Asset[] = [];
       const response = await bitvavo.assets({});
-      console.log(response);
       for (let entry of response) {
         list.push(new Asset(entry));
       }
@@ -78,7 +76,6 @@ export class BitvavoService {
     try {
       const list: TickerPrice[] = [];
       const response = await bitvavo.tickerPrice({});
-      console.log(response);
       for (let entry of response) {
         list.push(new TickerPrice(entry));
       }
