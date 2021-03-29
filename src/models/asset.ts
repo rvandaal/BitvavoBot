@@ -8,6 +8,7 @@ export class Asset {
     public available: number;
     public inOrder: number;
     public investment: number;
+    public currentPrice: number;
 
     constructor(item: any) {
         this.symbol = item.symbol;
@@ -15,6 +16,7 @@ export class Asset {
         this.available = 0;
         this.inOrder = 0;
         this.investment = 0;
+        this.currentPrice = 0;
     }
 
     public get tradeHistory(): TradeHistory | undefined {

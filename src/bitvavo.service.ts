@@ -3,6 +3,8 @@ import { Asset } from './models/asset';
 import { Assets } from './models/assets';
 import { Balance } from './models/balance';
 import { BalanceItem } from './models/balance-item';
+import { TickerPrice } from './models/ticker-price';
+import { TickerPrices } from './models/ticker-prices';
 import { TradeHistory } from './models/trade-history';
 import { TradeHistoryItem } from './models/trade-history-item';
 declare var require: any;
@@ -65,6 +67,22 @@ export class BitvavoService {
         list.push(new Asset(entry));
       }
       return new Assets(list);
+    } catch (error) {
+      console.log(error);
+    }
+
+    return undefined;
+  }
+
+  public async getTickerPrices(): Promise<TickerPrices | undefined> {
+    try {
+      const list: TickerPrice[] = [];
+      const response = await bitvavo.tickerPrice({});
+      console.log(response);
+      for (let entry of response) {
+        list.push(new TickerPrice(entry));
+      }
+      return new TickerPrices(list);
     } catch (error) {
       console.log(error);
     }

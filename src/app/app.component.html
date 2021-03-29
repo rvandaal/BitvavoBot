@@ -9,10 +9,11 @@
               <tr class="d-flex">
                 <th scope="col" style="width: 5%">#</th>
                 <th scope="col" style="width: 5%"></th>
-                <th scope="col" style="width: 35%">Valuta</th>
-                <th scope="col" style="width: 25%">Hoeveelheid</th>
-                <th scope="col" style="width: 25%">Investering</th>
-                <th scope="col" style="width: 5%"></th>
+                <th scope="col" style="width: 20%">Valuta</th>
+                <th scope="col" style="width: 20%">Koers</th>
+                <th scope="col" style="width: 20%">Hoeveelheid</th>
+                <th scope="col" style="width: 20%">Investering</th>
+                <th scope="col" style="width: 10%"></th>
               </tr>
             </thead>
             <tbody>
@@ -21,10 +22,11 @@
               <td style="width: 5%">
                 <i style="margin: -4px 0 0 0" class="icn" [ngClass]="'icn-' + asset.symbol.toLowerCase()"></i>
               </td>
-              <td style="width: 35%">{{asset.name}} <span class="symbol">{{ asset.symbol }}</span></td>
-              <td style="width: 25%">{{ asset.totalAmount | number }} <span class="symbol">{{ asset.symbol }}</span></td>
-              <td style="width: 25%">{{ asset.investment| number }} <span class="symbol">EUR</span></td>
-              <td style="width: 5%">
+              <td style="width: 20%">{{asset.name}} <span class="symbol">{{ asset.symbol }}</span></td>
+              <td style="width: 20%">{{ asset.currentPrice | number }} <span class="symbol">EUR</span></td>
+              <td style="width: 20%">{{ asset.totalAmount | number }} <span class="symbol">{{ asset.symbol }}</span></td>
+              <td style="width: 20%">{{ asset.investment| number }} <span class="symbol">EUR</span></td>
+              <td style="width: 10%">
                 <button class="btn btn-sm" style="padding: 3px 8px" (click)="onClickTableRow(asset)">
                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chevron-right" viewBox="0 0 16 16">
                     <path fill-rule="evenodd" d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708z"/>

@@ -47,6 +47,26 @@ export class AppComponent {
           }
         }
       }
+
+      if (this.assets) {
+        setInterval(async () => {
+          if (this.assets) {
+            const tickerPrices = await bitvavoService.getTickerPrices();
+            if (tickerPrices) {
+              for (let tickerPrice of tickerPrices.list) {
+                const index = tickerPrice.market.indexOf('-EUR');
+                if (index > -1) {
+                  const symbol = tickerPrice.market.substr(0, index);
+                  const asset = this.assets.getAsset(symbol);
+                  if (asset) {
+                    asset.currentPrice = tickerPrice.price;
+                  }
+                }
+              }
+            }
+          }
+        }, 5000);
+      }
     })();
 
   }
