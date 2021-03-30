@@ -12,11 +12,17 @@ export class Trades {
     public updateGroupedList(): void {
         const groupedList: GroupedTrade[] = [];
         let currentDate: Date | undefined;
+        let currentPrice: number | undefined;
+        let currentIsBuy: boolean | undefined;
         let groupedTrade: GroupedTrade | undefined;
 
         for (let entry of this.list) {
             const date = entry.date;
-            if (!currentDate || Math.abs(date.getTime() - currentDate?.getTime()) > 1000) {
+            if (
+                !currentDate || Math.abs(date.getTime() - currentDate?.getTime()) > 1000 || 
+                currentPrice !== entry.price ||
+                currentIsBuy !== entry.isBuy
+            ) {
                 if (groupedTrade) {
                     groupedList.push(groupedTrade);
                 }
@@ -26,6 +32,8 @@ export class Trades {
                 groupedTrade =
                     new GroupedTrade(entry.market, entry.amount, entry.price, entry.isBuy, date, entry.fee, euroAmount);
                 currentDate = date;
+                currentPrice = entry.price;
+                currentIsBuy = entry.isBuy;
             } else if (groupedTrade) {
                 groupedTrade.amount += entry.amount;
                 groupedTrade.euroAmount += entry.isBuy ?

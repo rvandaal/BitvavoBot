@@ -24,7 +24,7 @@
                 <i style="margin: -4px 0 0 0" class="icn" [ngClass]="'icn-' + asset.symbol.toLowerCase()"></i>
               </td>
               <td style="width: 25%">{{asset.name}} <span class="symbol">{{ asset.symbol }}</span></td>
-              <td style="width: 15%">{{ asset.currentPrice | number: '0.2-2' }} <span class="symbol">EUR</span></td>
+              <td style="width: 15%">{{ asset.currentPrice | number: '0.2-6' }} <span class="symbol">EUR</span></td>
               <td style="width: 15%">{{ asset.totalAmount | number: '0.0-4' }} <span class="symbol">{{ asset.symbol }}</span></td>
               <td style="width: 15%">{{ asset.currentValue| number: '0.2-2' }} <span class="symbol">EUR</span></td>
               <td style="width: 15%">{{ asset.investment| number: '0.2-2' }} <span class="symbol">EUR</span></td>
@@ -37,7 +37,6 @@
                     <path fill-rule="evenodd" d="M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0z"/>
                   </svg>
                 </button>
-                <!-- <button class="btn btn-red" (click)="onClickTableRow(asset)">Hello</button> -->
               </td>
             </tr>
             </tbody>
@@ -66,7 +65,7 @@
               <td>{{ trade.totalAmount | number: '0.0-4' }}</td>
               <td>{{ trade.euroAmount | number: '0.2-2' }}</td>
               <td>{{ trade.totalEuroAmount | number: '0.2-2' }}</td>
-              <td>{{ trade.price | number: '0.2-2' }}</td>
+              <td>{{ trade.price | number: '0.2-6' }}</td>
             </tr>
             </tbody>
           </table>
