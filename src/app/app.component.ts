@@ -15,6 +15,7 @@ export class AppComponent {
   public trades: Trades | undefined;
   public assets: Assets | undefined;
   public assetWhichDetailsAreOpen: Asset | undefined;
+  public showAllCoins = true;
 
   title = 'BitvavoBot';
 
