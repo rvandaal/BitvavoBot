@@ -3,7 +3,7 @@ import { Trades } from './trades';
 export class Asset {
     private _tradingHistory?: Trades;
 
-    public readonly symbol: string;
+    public readonly symbol: string; // should be uppercase
     public readonly name: string;
     public available: number;
     public inOrder: number;
@@ -11,7 +11,7 @@ export class Asset {
     public currentPrice: number;
 
     constructor(item: any) {
-        this.symbol = item.symbol;
+        this.symbol = item.symbol.toUpperCase();
         this.name = item.name;
         this.available = 0;
         this.inOrder = 0;
@@ -31,7 +31,7 @@ export class Asset {
     }
 
     public get euroTradingPair(): string {
-        return this.symbol.toUpperCase() + '-EUR';
+        return this.symbol + '-EUR';
     }
 
     public get totalAmount(): number {

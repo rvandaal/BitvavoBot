@@ -29,7 +29,7 @@
               <td style="width: 15%">{{ asset.currentValue| number: '0.2-2' }} <span class="symbol">EUR</span></td>
               <td style="width: 15%">{{ asset.investment| number: '0.2-2' }} <span class="symbol">EUR</span></td>
               <td style="width: 5%">
-                <button *ngIf="asset.symbol.toLowerCase() !== 'eur'" class="btn btn-sm" style="padding: 3px 8px" (click)="onClickTableRow(asset)">
+                <button *ngIf="asset.symbol !== 'EUR'" class="btn btn-sm" style="padding: 3px 8px" (click)="onClickTableRow(asset)">
                   <svg *ngIf="assetWhichDetailsAreOpen !== asset" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chevron-right" viewBox="0 0 16 16">
                     <path fill-rule="evenodd" d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708z"/>
                   </svg>

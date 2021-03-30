@@ -70,7 +70,7 @@ export class AppComponent {
 
   public getAssetName(symbol: string): string | undefined {
     if(this.assets) {
-      return this.assets.list.find(a => a.symbol.toLowerCase() === symbol.toLowerCase())?.name;
+      return this.assets.list.find(a => a.symbol === symbol)?.name;
     }
     return undefined;
   }
@@ -91,7 +91,7 @@ export class AppComponent {
   }
 
   private async updateTrades(asset: Asset): Promise<Trades | undefined> {
-    if (asset.symbol.toLowerCase() !== 'eur') {
+    if (asset.symbol !== 'EUR') {
       const trades = await this.bitvavoService.getTrades(asset);
       if (trades && asset) {
         asset.trades = trades;

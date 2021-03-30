@@ -10,6 +10,6 @@ export class Assets {
     }
 
     public getAsset(symbol: string): Asset | undefined {
-        return this.list.find(a => a.symbol.toLowerCase() === symbol.toLowerCase());
+        return this.list.find(a => a.symbol === symbol);
     }
 }
