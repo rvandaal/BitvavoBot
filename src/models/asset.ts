@@ -9,6 +9,7 @@ export class Asset {
     public inOrder: number;
     public investment: number;
     public currentPrice: number;
+    public price24hAgo: number;
 
     constructor(item: any) {
         this.symbol = item.symbol.toUpperCase();
@@ -17,6 +18,7 @@ export class Asset {
         this.inOrder = 0;
         this.investment = 0;
         this.currentPrice = 0;
+        this.price24hAgo = 0;
     }
 
     public get trades(): Trades | undefined {
@@ -40,5 +42,9 @@ export class Asset {
 
     public get currentValue(): number {
         return this.totalAmount * this.currentPrice;
+    }
+
+    public get change24h(): number {
+        return (this.currentPrice - this.price24hAgo) / this.price24hAgo * 100;
     }
 }

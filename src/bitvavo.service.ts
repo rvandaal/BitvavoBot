@@ -3,10 +3,12 @@ import { Asset } from './models/asset';
 import { Assets } from './models/assets';
 import { Balances } from './models/balances';
 import { Balance } from './models/balance';
-import { TickerPrice } from './models/ticker-price';
+import { TickerPrice24h } from './models/ticker-price-24h';
 import { TickerPrices } from './models/ticker-prices';
 import { Trades } from './models/trades';
 import { Trade } from './models/trade';
+import { TickerPrices24h } from './models/ticker-prices-24h';
+import { TickerPrice } from './models/ticker-price';
 declare var require: any;
 const {bitvavo, websocketSetListeners} = require('./bitvavo-api');
 
@@ -62,7 +64,9 @@ export class BitvavoService {
       const list: Asset[] = [];
       const response = await bitvavo.assets({});
       for (let entry of response) {
-        list.push(new Asset(entry));
+        if (!['EUR', 'AE', 'DASH'].includes(entry.symbol)) {
+          list.push(new Asset(entry));
+        }
       }
       return new Assets(list);
     } catch (error) {
@@ -80,6 +84,21 @@ export class BitvavoService {
         list.push(new TickerPrice(entry));
       }
       return new TickerPrices(list);
+    } catch (error) {
+      console.log(error);
+    }
+
+    return undefined;
+  }
+
+  public async getTickerPrices24h(): Promise<TickerPrices24h | undefined> {
+    try {
+      const list: TickerPrice24h[] = [];
+      const response = await bitvavo.ticker24h({});
+      for (let entry of response) {
+        list.push(new TickerPrice24h(entry));
+      }
+      return new TickerPrices24h(list);
     } catch (error) {
       console.log(error);
     }

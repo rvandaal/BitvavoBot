@@ -46,30 +46,21 @@ export class AppComponent {
       }
 
       if (this.assets) {
+        this.updateCurrentPrice();
+        this.updateChange24h();
+
         setInterval(async () => {
           if (this.assets) {
-            const tickerPrices = await bitvavoService.getTickerPrices();
-            if (tickerPrices) {
-              for (let tickerPrice of tickerPrices.list) {
-                const index = tickerPrice.market.indexOf('-EUR');
-                if (index > -1) {
-                  const symbol = tickerPrice.market.substr(0, index);
-                  const asset = this.assets.getAsset(symbol);
-                  if (asset) {
-                    asset.currentPrice = tickerPrice.price;
-                  }
-                }
-              }
-            }
+            await this.updateCurrentPrice();
+            await this.updateChange24h();
           }
         }, 5000);
       }
     })();
-
   }
 
   public getAssetName(symbol: string): string | undefined {
-    if(this.assets) {
+    if (this.assets) {
       return this.assets.list.find(a => a.symbol === symbol)?.name;
     }
     return undefined;
@@ -88,6 +79,39 @@ export class AppComponent {
         this.assetWhichDetailsAreOpen = undefined;
       }
     })();
+  }
+
+  private async updateCurrentPrice(): Promise<void> {
+    const tickerPrices = await this.bitvavoService.getTickerPrices();
+    if (tickerPrices && this.assets) {
+      for (let tickerPrice of tickerPrices.list) {
+        const index = tickerPrice.market.indexOf('-EUR');
+        if (index > -1) {
+          const symbol = tickerPrice.market.substr(0, index);
+          const asset = this.assets.getAsset(symbol);
+          if (asset) {
+            asset.currentPrice = tickerPrice.price;
+          }
+        }
+      }
+    }
+  }
+
+  private async updateChange24h(): Promise<void> {
+    // todo: changes24h komen niet overeen met die van bitvavo
+    const tickerPrices24h = await this.bitvavoService.getTickerPrices24h();
+    if (tickerPrices24h && this.assets) {
+      for (let tickerPrice24h of tickerPrices24h.list) {
+        const index = tickerPrice24h.market.indexOf('-EUR');
+        if (index > -1) {
+          const symbol = tickerPrice24h.market.substr(0, index);
+          const asset = this.assets.getAsset(symbol);
+          if (asset) {
+            asset.price24hAgo = tickerPrice24h.open;
+          }
+        }
+      }
+    }
   }
 
   private async updateTrades(asset: Asset): Promise<Trades | undefined> {
