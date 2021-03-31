@@ -10,6 +10,7 @@ export class Asset {
     public investment: number;
     public currentPrice: number;
     public price24hAgo: number;
+    public areRowDetailsOpen: boolean;
 
     constructor(item: any) {
         this.symbol = item.symbol.toUpperCase();
@@ -19,6 +20,7 @@ export class Asset {
         this.investment = 0;
         this.currentPrice = 0;
         this.price24hAgo = 0;
+        this.areRowDetailsOpen = false;
     }
 
     public get trades(): Trades | undefined {

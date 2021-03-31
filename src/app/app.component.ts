@@ -14,8 +14,10 @@ export class AppComponent {
   public balance: Balances | undefined;
   public trades: Trades | undefined;
   public assets: Assets | undefined;
-  public assetWhichDetailsAreOpen: Asset | undefined;
+  public assetWithTradeDetailsOpen: Asset | undefined;
   public showAllCoins = true;
+  public moreRowDetailsAtOnce = false;
+  public assetWithRowDetailsOpen: Asset | undefined;
 
   title = 'BitvavoBot';
 
@@ -72,14 +74,30 @@ export class AppComponent {
       if (!asset.trades) {
         await this.updateTrades(asset);
       }
-      if (!this.assetWhichDetailsAreOpen || this.assetWhichDetailsAreOpen !== asset) {
+      if (!this.assetWithTradeDetailsOpen || this.assetWithTradeDetailsOpen !== asset) {
         this.trades = asset.trades;
-        this.assetWhichDetailsAreOpen = asset;
+        this.assetWithTradeDetailsOpen = asset;
       } else {
         this.trades = undefined;
-        this.assetWhichDetailsAreOpen = undefined;
+        this.assetWithTradeDetailsOpen = undefined;
       }
     })();
+  }
+
+  public toggleRowDetails(asset: Asset): void {
+    if (!this.assetWithRowDetailsOpen) {
+      asset.areRowDetailsOpen = true;
+      this.assetWithRowDetailsOpen = asset;
+    } else if (this.assetWithRowDetailsOpen === asset) {
+      asset.areRowDetailsOpen = false;
+      this.assetWithRowDetailsOpen = undefined;
+    } else if (this.moreRowDetailsAtOnce) {
+      asset.areRowDetailsOpen = !asset.areRowDetailsOpen;
+    } else {
+      this.assetWithRowDetailsOpen.areRowDetailsOpen = false;
+      asset.areRowDetailsOpen = true;
+      this.assetWithRowDetailsOpen = asset;
+    }
   }
 
   private async updateCurrentPrice(): Promise<void> {
