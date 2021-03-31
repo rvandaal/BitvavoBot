@@ -69,7 +69,7 @@ export class AppComponent {
     return undefined;
   }
 
-  public onClickTableRow(asset: Asset): void {
+  public onClickTableRow(event: Event, asset: Asset): void {
     (async () => {
       if (!asset.trades) {
         await this.updateTrades(asset);
@@ -82,6 +82,7 @@ export class AppComponent {
         this.assetWithTradeDetailsOpen = undefined;
       }
     })();
+    event.stopPropagation();
   }
 
   public toggleRowDetails(asset: Asset): void {
