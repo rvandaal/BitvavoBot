@@ -48,7 +48,7 @@
                         </svg>
                       </button>
                   </tr>
-                  <tr *ngIf="asset.areRowDetailsOpen">
+                  <tr *ngIf="asset.areRowDetailsOpen && (showAllCoins || asset.totalAmount > 0)">
                     <th scope="row" style="width: 5%"></th>
                     <td scope="row" style="width: 5%"></td>
                     <td colspan="8">
@@ -59,6 +59,7 @@
                             <input type="text" class="form-control buy-sell ml-2" placeholder="{{asset.currentPrice}}">
                             <input type="text" class="form-control buy-sell ml-2" placeholder="Trigger">
                             <button class="btn btn-danger buy-sell ml-2">Verkopen</button>
+                            <button class="btn btn-danger buy-sell ml-2">Alles verkopen</button>
                         </div>
                       </div>
                     </td>
