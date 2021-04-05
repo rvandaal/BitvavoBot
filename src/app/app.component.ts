@@ -1,9 +1,9 @@
-import { Component } from '@angular/core';
-import { BitvavoService } from 'src/bitvavo.service';
-import { Asset } from 'src/models/asset';
-import { Assets } from 'src/models/assets';
-import { Balances } from 'src/models/balances';
-import { Trades } from 'src/models/trades';
+import { ChangeDetectorRef, Component } from '@angular/core';
+import { Observable } from 'rxjs';
+import { AssetDictionary, CoinService } from 'src/services/coin-service';
+import { AssetVm } from 'src/view-models/asset-vm';
+import { map } from 'rxjs/operators';
+import { Trade } from 'src/models/trade';
 
 @Component({
   selector: 'app-root',
@@ -11,72 +11,36 @@ import { Trades } from 'src/models/trades';
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent {
-  public balance: Balances | undefined;
-  public trades: Trades | undefined;
-  public assets: Assets | undefined;
-  public assetWithTradeDetailsOpen: Asset | undefined;
+
+  public assets$: Observable<AssetVm[]>;
+
+  public trades: Trade[] | undefined;
+  public assetWithTradeDetailsOpen: AssetVm | undefined;
   public showAllCoins = true;
   public moreRowDetailsAtOnce = false;
-  public assetWithRowDetailsOpen: Asset | undefined;
+  public assetWithRowDetailsOpen: AssetVm | undefined;
 
   title = 'BitvavoBot';
 
-  constructor(private bitvavoService: BitvavoService) {
-    // bitvavoService.getAssets().then(a => {
-    //   this.assets = a;
-    // });
-    (async () => {
-      const a = await bitvavoService.getAssets();
-      this.assets = a;
-      const b = await bitvavoService.getBalance();
-      this.balance = b;
-  
-      // bitvavoService.getBalance().then(bl => {
-      //   this.balance = bl;
-      // });
-  
-      if (this.balance && this.assets) {
-        for (let bi of this.balance.list) {
-          bi.asset = this.assets.getAsset(bi.symbol);
-          if (bi.asset) {
-            bi.asset.available = bi.available;
-            bi.asset.inOrder = bi.inOrder;
-            if (bi.totalAmount > 0) {
-              this.updateTrades(bi.asset);
-            }
-          }
-        }
-      }
-
-      if (this.assets) {
-        this.updateCurrentPrice();
-        this.updateChange24h();
-
-        setInterval(async () => {
-          if (this.assets) {
-            await this.updateCurrentPrice();
-            await this.updateChange24h();
-          }
-        }, 5000);
-      }
-    })();
+  constructor(private coinService: CoinService, cd: ChangeDetectorRef) {
+    const sortFunc = (a, b) => b.change1m - a.change1m;
+    this.assets$ = this.coinService.assets$.pipe(
+      map((assets: AssetDictionary): AssetVm[] => {
+        return Object.keys(assets).map(key => new AssetVm(assets[key])).sort(sortFunc);
+      })
+    );
+    this.coinService.start();
+    //cd.detectChanges();
   }
 
-  public getAssetName(symbol: string): string | undefined {
-    if (this.assets) {
-      return this.assets.list.find(a => a.symbol === symbol)?.name;
-    }
-    return undefined;
-  }
-
-  public onClickTableRow(event: Event, asset: Asset): void {
+  public onClickTableRow(event: Event, assetVm: AssetVm): void {
     (async () => {
-      if (!asset.trades) {
-        await this.updateTrades(asset);
+      if (!assetVm.trades) {
+        await this.coinService.updateTrade(assetVm.asset);
       }
-      if (!this.assetWithTradeDetailsOpen || this.assetWithTradeDetailsOpen !== asset) {
-        this.trades = asset.trades;
-        this.assetWithTradeDetailsOpen = asset;
+      if (!this.assetWithTradeDetailsOpen || this.assetWithTradeDetailsOpen !== assetVm) {
+        this.trades = assetVm.trades;
+        this.assetWithTradeDetailsOpen = assetVm;
       } else {
         this.trades = undefined;
         this.assetWithTradeDetailsOpen = undefined;
@@ -85,7 +49,7 @@ export class AppComponent {
     event.stopPropagation();
   }
 
-  public toggleRowDetails(asset: Asset): void {
+  public toggleRowDetails(asset: AssetVm): void {
     if (!this.assetWithRowDetailsOpen) {
       asset.areRowDetailsOpen = true;
       this.assetWithRowDetailsOpen = asset;
@@ -99,50 +63,6 @@ export class AppComponent {
       asset.areRowDetailsOpen = true;
       this.assetWithRowDetailsOpen = asset;
     }
-  }
-
-  private async updateCurrentPrice(): Promise<void> {
-    const tickerPrices = await this.bitvavoService.getTickerPrices();
-    if (tickerPrices && this.assets) {
-      for (let tickerPrice of tickerPrices.list) {
-        const index = tickerPrice.market.indexOf('-EUR');
-        if (index > -1) {
-          const symbol = tickerPrice.market.substr(0, index);
-          const asset = this.assets.getAsset(symbol);
-          if (asset) {
-            asset.currentPrice = tickerPrice.price;
-          }
-        }
-      }
-    }
-  }
-
-  private async updateChange24h(): Promise<void> {
-    // todo: changes24h komen niet overeen met die van bitvavo
-    const tickerPrices24h = await this.bitvavoService.getTickerPrices24h();
-    if (tickerPrices24h && this.assets) {
-      for (let tickerPrice24h of tickerPrices24h.list) {
-        const index = tickerPrice24h.market.indexOf('-EUR');
-        if (index > -1) {
-          const symbol = tickerPrice24h.market.substr(0, index);
-          const asset = this.assets.getAsset(symbol);
-          if (asset) {
-            asset.price24hAgo = tickerPrice24h.open;
-          }
-        }
-      }
-    }
-  }
-
-  private async updateTrades(asset: Asset): Promise<Trades | undefined> {
-    if (asset.symbol !== 'EUR') {
-      const trades = await this.bitvavoService.getTrades(asset);
-      if (trades && asset) {
-        asset.trades = trades;
-      }
-      return trades;
-    }
-    return undefined;
   }
 }
 

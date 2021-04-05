@@ -1,18 +1,16 @@
 import { Injectable } from '@angular/core';
 import { Asset } from './models/asset';
-import { Assets } from './models/assets';
-import { Balances } from './models/balances';
-import { Balance } from './models/balance';
-import { TickerPrice24h } from './models/ticker-price-24h';
-import { TickerPrices } from './models/ticker-prices';
-import { Trades } from './models/trades';
-import { Trade } from './models/trade';
-import { TickerPrices24h } from './models/ticker-prices-24h';
-import { TickerPrice } from './models/ticker-price';
+import { TickerPriceResponse } from './response-models/ticker-price-reponse';
+import { AssetResponse } from './response-models/asset-response';
+import { BalanceResponse } from './response-models/balance-response';
+import { TradeResponse } from './response-models/trade-response';
+import { TickerPrice24hResponse } from './response-models/ticker-price-24h-response';
 declare var require: any;
-const {bitvavo, websocketSetListeners} = require('./bitvavo-api');
+const { bitvavo } = require('./bitvavo-api');
 
 // chrome via taskbar starten, deze zet de CORS check uit
+
+// Reponsible for converting raw data into response models.
 
 @Injectable({
   providedIn: 'root'
@@ -21,19 +19,42 @@ export class BitvavoService {
 
   constructor() { }
 
-  public async getBalance(): Promise<Balances | undefined>{
+  public async getAssets(): Promise<AssetResponse[]> {
     try {
-      const list: Balance[] = [];
-      const response = await bitvavo.balance({});
-      for (let entry of response) {
-        list.push(new Balance(entry));
+      if (this.ensurePositiveLimit()) {
+        const list: AssetResponse[] = [];
+        const response = await bitvavo.assets({});
+        // tslint:disable-next-line: prefer-const
+        for (let item of response) {
+          if (!['EUR', 'AE', 'DASH'].includes(item.symbol)) {
+            list.push(new AssetResponse(item));
+          }
+        }
+        return list;
       }
-      return new Balances(list);
+      return [];
     } catch (error) {
-      console.log(error);
+      return Promise.reject();
     }
+  }
 
-    return undefined;
+  public async getBalance(): Promise<BalanceResponse[]>{
+    try {
+      if (this.ensurePositiveLimit()) {
+        const list: BalanceResponse[] = [];
+        const response = await bitvavo.balance({});
+        // tslint:disable-next-line: prefer-const
+        for (let item of response) {
+          if (!['EUR', 'AE', 'DASH'].includes(item.symbol)) {
+            list.push(new BalanceResponse(item));
+          }
+        }
+        return list;
+      }
+      return [];
+    } catch (error) {
+      return Promise.reject();
+    }
 
     // bitvavo.placeOrder('ETH-EUR', 'buy', 'limit', { amount: '3', price: '2' }, (error, response) => {
     //   if (error === null) {
@@ -44,65 +65,71 @@ export class BitvavoService {
     // })
   }
 
-  public async getTrades(asset: Asset): Promise<Trades | undefined> {
+  public async getTrades(asset: Asset): Promise<TradeResponse[]> {
     try {
-      const list: Trade[] = [];
-      const response = await bitvavo.trades(asset.euroTradingPair, {});
-      for (let entry of response) {
-        list.push(new Trade(entry));
-      }
-      return new Trades(list);
-    } catch (error) {
-      console.log(error);
-    }
-
-    return undefined;
-  }
-
-  public async getAssets(): Promise<Assets | undefined> {
-    try {
-      const list: Asset[] = [];
-      const response = await bitvavo.assets({});
-      for (let entry of response) {
-        if (!['EUR', 'AE', 'DASH'].includes(entry.symbol)) {
-          list.push(new Asset(entry));
+      if (this.ensurePositiveLimit()) {
+        const list: TradeResponse[] = [];
+        const response = await bitvavo.trades(asset.euroTradingPair, {});
+        // tslint:disable-next-line: prefer-const
+        for (let item of response) {
+          list.push(new TradeResponse(item));
         }
+        return list;
       }
-      return new Assets(list);
+      return [];
     } catch (error) {
-      console.log(error);
+      return Promise.reject();
     }
-
-    return undefined;
   }
 
-  public async getTickerPrices(): Promise<TickerPrices | undefined> {
+  public async getTickerPrices(): Promise<TickerPriceResponse[]> {
     try {
-      const list: TickerPrice[] = [];
-      const response = await bitvavo.tickerPrice({});
-      for (let entry of response) {
-        list.push(new TickerPrice(entry));
+      if (this.ensurePositiveLimit()) {
+        const list: TickerPriceResponse[] = [];
+        const response = await bitvavo.tickerPrice({});
+        // tslint:disable-next-line: prefer-const
+        for (let item of response) {
+          const index = item.market.indexOf('-');
+          const symbol = item.market.substr(0, index);
+          if (!['EUR', 'AE', 'DASH'].includes(symbol)) {
+            list.push(new TickerPriceResponse(item));
+          }
+        }
+        return list;
       }
-      return new TickerPrices(list);
+      return [];
     } catch (error) {
-      console.log(error);
+      return Promise.reject();
     }
-
-    return undefined;
   }
 
-  public async getTickerPrices24h(): Promise<TickerPrices24h | undefined> {
+  public async getTickerPrices24h(): Promise<TickerPrice24hResponse[]> {
     try {
-      const list: TickerPrice24h[] = [];
-      const response = await bitvavo.ticker24h({});
-      for (let entry of response) {
-        list.push(new TickerPrice24h(entry));
+      if (this.ensurePositiveLimit()) {
+        const list: TickerPrice24hResponse[] = [];
+        const response = await bitvavo.ticker24h({});
+        // tslint:disable-next-line: prefer-const
+        for (let item of response) {
+          const index = item.market.indexOf('-');
+          const symbol = item.market.substr(0, index);
+          if (!['EUR', 'AE', 'DASH'].includes(symbol)) {
+            list.push(new TickerPrice24hResponse(item));
+          }
+        }
+        return list;
       }
-      return new TickerPrices24h(list);
+      return [];
     } catch (error) {
-      console.log(error);
+      return Promise.reject();
     }
+  }
 
-    return undefined;
+  private ensurePositiveLimit(): boolean {
+    const result = bitvavo.getRemainingLimit();
+    console.log('Remaining limit: ', result);
+    if (!result) {
+      console.log('RATE LIMIT BEREIKT');
+    }
+    return result > 100;
   }
 }

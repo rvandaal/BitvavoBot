@@ -1,10 +1,7 @@
 export class TickerPrice {
+    public readonly date: Date;
 
-    public readonly market: string;
-    public readonly price: number;
-
-    constructor(item: any) {
-        this.market = item.market;
-        this.price = +item.price;
+    constructor(public price: number) {
+        this.date = new Date();
     }
 }
