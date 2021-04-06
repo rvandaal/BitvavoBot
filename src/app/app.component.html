@@ -11,7 +11,7 @@
             <ng-toggle onText="ja" offText="nee" [size]="'sm'" class="ml-3" [(ngModel)]="moreRowDetailsAtOnce"></ng-toggle>
           </div>          
           <div class="d-flex flex-row">
-            <table class="table flex-fill" *ngIf="assets$">
+            <table class="table flex-fill">
               <thead>
                 <tr>
                   <th scope="col" style="width: 5%">#</th>
@@ -28,7 +28,7 @@
                 </tr>
               </thead>
               <tbody>
-                <ng-container *ngFor="let asset of assets$ | async; index as i">
+                <ng-container *ngFor="let asset of assets; index as i">
                   <tr *ngIf="showAllCoins || asset.totalAmount > 0" (click)="toggleRowDetails(asset)">
                     <th scope="row" style="width: 5%">{{ i + 1 }}</th>
                     <td style="width: 5%">
@@ -58,12 +58,11 @@
                     <td colspan="8">
                       <div class="d-flex flex-row justify-content-start">
                         <div class="d-flex flex-row align-items-center">
-                            <button class="btn btn-success buy-sell">Kopen</button>
-                            <input type="text" class="form-control buy-sell ml-2 " placeholder="Hoeveelheid">
-                            <input type="text" class="form-control buy-sell ml-2" placeholder="{{asset.currentPrice}}">
-                            <input type="text" class="form-control buy-sell ml-2" placeholder="Trigger">
-                            <button class="btn btn-danger buy-sell ml-2">Verkopen</button>
-                            <button class="btn btn-danger buy-sell ml-2">Alles verkopen</button>
+                            <button class="btn btn-success buy-sell" [disabled]="!isBuyOrSellButtonEnabled" (click)="onBuyOrSellButtonClick(asset, true)">Kopen</button>
+                            <input type="text" class="form-control buy-sell ml-2" placeholder="Hoeveelheid" [(ngModel)]="tradeAmount">
+                            <input type="text" class="form-control buy-sell ml-2" placeholder="{{asset.currentPrice}}" [(ngModel)]="tradePrice">
+                            <input type="text" class="form-control buy-sell ml-2" placeholder="Trigger" [(ngModel)]="tradeTriggerPrice">
+                            <button class="btn btn-danger buy-sell ml-2" (click)="onBuyOrSellButtonClick(asset, false)">Verkopen</button>
                         </div>
                       </div>
                     </td>

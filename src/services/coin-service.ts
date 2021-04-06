@@ -45,7 +45,7 @@ export class CoinService {
             this.intervalCounter = 0;
             this.intervalId = setInterval(() => {
                 this.performPeriodicTasks();
-                this.assetsSubject.next(this.assets);
+                //this.assetsSubject.next(this.assets);
             }, this.smallestInterval);
         })();
     }
@@ -54,6 +54,27 @@ export class CoinService {
         if (this.intervalId) {
             clearInterval(this.intervalId);
         }
+    }
+
+    public placeBuyOrder(
+        asset: Asset,
+        tradeAmount: number,
+        tradePrice: number | undefined,
+        tradeTriggerPrice: number | undefined
+    ): Promise<void> {
+        return this.bitvavoService.placeBuyOrder(asset.euroTradingPair, tradeAmount, tradePrice, tradeTriggerPrice);
+    }
+
+    public placeSellOrder(
+        asset: Asset,
+        tradeAmount: number | undefined,
+        tradePrice: number | undefined,
+        tradeTriggerPrice: number | undefined
+    ): Promise<void> {
+        if (!tradeAmount) {
+            tradeAmount = asset.available;
+        }
+        return this.bitvavoService.placeSellOrder(asset.euroTradingPair, tradeAmount, tradePrice, tradeTriggerPrice);
     }
 
     public async updateTrade(asset: Asset): Promise<void> {

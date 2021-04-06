@@ -65,6 +65,46 @@ export class BitvavoService {
     // })
   }
 
+  public async placeBuyOrder(
+    market: string,
+    tradeAmount: number,
+    tradePrice: number | undefined,
+    tradeTriggerPrice: number | undefined
+  ): Promise<void> {
+    return this.placeOrder(market, true, tradeAmount, tradePrice, tradeTriggerPrice);
+  }
+
+  public async placeSellOrder(
+    market: string,
+    tradeAmount: number,
+    tradePrice: number | undefined,
+    tradeTriggerPrice: number | undefined
+  ): Promise<void> {
+    return this.placeOrder(market, false, tradeAmount, tradePrice, tradeTriggerPrice);
+  }
+
+  public async placeOrder(
+    market: string,
+    isBuy: boolean,
+    tradeAmount: number,
+    tradePrice: number | undefined,
+    tradeTriggerPrice: number | undefined
+  ): Promise<void> {
+    if (!tradeAmount) {
+      return;
+    }
+    const side = isBuy ? 'buy' : 'sell';
+    let response;
+    if (tradePrice && tradeTriggerPrice) {
+      // todo
+    } else if (tradePrice) {
+      response = await bitvavo.placeOrder(market, side, 'limit', { amount: tradeAmount, price: tradePrice });
+    } else {
+      response = await bitvavo.placeOrder(market, side, 'market', { amount: tradeAmount });
+    }
+    console.log('place order response: ', response);
+  }
+
   public async getTrades(asset: Asset): Promise<TradeResponse[]> {
     try {
       if (this.ensurePositiveLimit()) {
@@ -126,10 +166,6 @@ export class BitvavoService {
 
   private ensurePositiveLimit(): boolean {
     const result = bitvavo.getRemainingLimit();
-    console.log('Remaining limit: ', result);
-    if (!result) {
-      console.log('RATE LIMIT BEREIKT');
-    }
     return result > 100;
   }
 }
