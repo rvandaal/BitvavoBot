@@ -42,7 +42,6 @@ export class CoinService {
         (async () => {
             await this.updateAssets();
             await this.updateBalance();
-            await this.updateTrades();
             this.intervalCounter = 0;
             this.intervalId = setInterval(() => {
                 this.performPeriodicTasks();
@@ -95,15 +94,6 @@ export class CoinService {
         }
     }
 
-    private async updateTrades(): Promise<void> {
-        Object.keys(this.assets).forEach(key => {
-            const asset = this.assets[key];
-            if (asset.totalAmount > 0) {
-                this.updateTrade(asset);
-            }
-        });
-    }
-
     private async updateTickerPrices(): Promise<void> {
         const tickerPriceResponses = await this.bitvavoService.getTickerPrices();
         // tslint:disable-next-line: prefer-const
@@ -139,9 +129,17 @@ export class CoinService {
         this.intervalCounter++;
     }
 
+    private performAnalysis(): void {
+        Object.keys(this.assets).forEach(key => {
+            const asset = this.assets[key];
+            asset.update();
+        });
+    }
+
     private async performTasksWithInterval5s(): Promise<void> {
         await this.updateTickerPrices();
         await this.updateTickerPrices24h();
+        this.performAnalysis();
     }
 
     private groupTrades(trades: Trade[]): Trade[] {

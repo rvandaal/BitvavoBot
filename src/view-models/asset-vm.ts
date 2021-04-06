@@ -52,6 +52,14 @@ export class AssetVm {
         return this.asset.change1m;
     }
 
+    public get relativeChange(): number | undefined {
+        return this.asset.relativeChange;
+    }
+
+    public get numberOfSubsequentIncreasements(): number {
+        return this.asset.numberOfSubsequentIncreasements;
+    }
+
     public get trades(): Trade[] | undefined {
         return this.asset.trades;
     }

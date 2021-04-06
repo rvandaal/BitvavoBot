@@ -23,10 +23,22 @@ export class AppComponent {
   title = 'BitvavoBot';
 
   constructor(private coinService: CoinService, cd: ChangeDetectorRef) {
-    const sortFunc = (a, b) => b.change1m - a.change1m;
+    const sortFunc = (a: AssetVm, b: AssetVm) => {
+      const br = b.relativeChange;
+      const ar = a.relativeChange;
+      //return !br && !ar ? b.change24h - a.change24h : br && !ar ? 1 : !br && ar ? -1 : br && ar ? br - ar : 0;
+      return b.numberOfSubsequentIncreasements - a.numberOfSubsequentIncreasements;
+    };
     this.assets$ = this.coinService.assets$.pipe(
       map((assets: AssetDictionary): AssetVm[] => {
-        return Object.keys(assets).map(key => new AssetVm(assets[key])).sort(sortFunc);
+        return Object.keys(assets).map(key => {
+          const assetVm = new AssetVm(assets[key]);
+          if (this.assetWithRowDetailsOpen && this.assetWithRowDetailsOpen.symbol === key) {
+             this.assetWithRowDetailsOpen = assetVm;
+             assetVm.areRowDetailsOpen = true;
+          }
+          return assetVm;
+        }).sort(sortFunc);
       })
     );
     this.coinService.start();

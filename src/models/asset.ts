@@ -1,3 +1,4 @@
+import { textChangeRangeIsUnchanged } from 'typescript';
 import { TickerPrice } from './ticker-price';
 import { TickerPrice24h } from './ticker-price-24h';
 import { Trade } from './trade';
@@ -12,6 +13,10 @@ export class Asset {
     public inOrder: number;
     public investment: number;
     public euroPrice24hAgo: TickerPrice24h;
+    public change1m: number | undefined;
+    public minPrice: number;
+    public maxPrice: number;
+    public numberOfSubsequentIncreasements: number;
 
     constructor(symbol: string, name: string) {
         this.symbol = symbol;
@@ -21,6 +26,9 @@ export class Asset {
         this.investment = 0;
         this.tickerPricesInternal = [];
         this.euroPrice24hAgo = new TickerPrice24h(0, 0);
+        this.minPrice = 0;
+        this.maxPrice = 0;
+        this.numberOfSubsequentIncreasements = 0;
     }
 
     public get trades(): Trade[] | undefined {
@@ -58,7 +66,29 @@ export class Asset {
         return (this.currentPrice - this.euroPrice24hAgo.open) / this.euroPrice24hAgo.open * 100;
     }
 
-    public get change1m(): number | undefined {
+    public get relativeChange(): number | undefined {
+        if (this.maxPrice - this.minPrice === 0) {
+            return undefined;
+        }
+        return (this.currentPrice - this.minPrice) / (this.maxPrice - this.minPrice);
+    }
+
+    public addNewPrice(tickerPrice: TickerPrice, baseCurrency: string): void {
+        if (baseCurrency === 'EUR') {
+            this.tickerPricesInternal.unshift(tickerPrice);
+        }
+    }
+
+    public update(): void {
+        this.updateChange1m();
+        if (this.tickerPricesInternal.length){
+            this.minPrice = Math.min(...this.tickerPricesInternal.slice(20).map(p => p.price));
+            this.maxPrice = Math.max(...this.tickerPricesInternal.slice(20).map(p => p.price));
+        }
+        this.updateNumberOfSubsequentIncreasements();
+    }
+
+    private updateChange1m(): void {
         let lastDate: Date;
         let date1minAgo: Date = new Date();
         let price1minAgo = 0;
@@ -75,14 +105,27 @@ export class Asset {
             }
         }
         if (price1minAgo > 0) {
-            return (this.currentPrice - price1minAgo) / price1minAgo * 100;
+            this.change1m = (this.currentPrice - price1minAgo) / price1minAgo * 100;
         }
-        return undefined;
+        this.change1m = undefined;
     }
 
-    public addNewPrice(tickerPrice: TickerPrice, baseCurrency: string): void {
-        if (baseCurrency === 'EUR') {
-            this.tickerPricesInternal.unshift(tickerPrice);
+    private updateNumberOfSubsequentIncreasements(): void {
+        let first = true;
+        let currentPrice = 0;
+        let counter = 0;
+        // tslint:disable-next-line: prefer-const
+        for (let tickerPrice of this.tickerPricesInternal) {
+            if (first) {
+                currentPrice = tickerPrice.price;
+                first = false;
+            } else if (tickerPrice.price < currentPrice) {
+                counter++;
+                currentPrice = tickerPrice.price;
+            } else {
+                this.numberOfSubsequentIncreasements = counter;
+                break;
+            }
         }
     }
 }
