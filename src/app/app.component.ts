@@ -4,6 +4,8 @@ import { AssetDictionary, CoinService } from 'src/services/coin-service';
 import { AssetVm } from 'src/view-models/asset-vm';
 import { map } from 'rxjs/operators';
 import { Trade } from 'src/models/trade';
+import { OpenOrder } from 'src/models/open-order';
+import { OpenOrderVm } from 'src/view-models/open-order-vm';
 
 @Component({
   selector: 'app-root',
@@ -13,17 +15,23 @@ import { Trade } from 'src/models/trade';
 export class AppComponent {
 
   public assets: AssetVm[] = [];
+  public openOrders: OpenOrderVm[] = [];
 
   public trades: Trade[] | undefined;
   public assetWithTradeDetailsOpen: AssetVm | undefined;
   public showAllCoins = true;
   public moreRowDetailsAtOnce = false;
   public assetWithRowDetailsOpen: AssetVm | undefined;
-  public tradeAmount: string | undefined;
+  public tradeAmountRaw: string | undefined;
   public tradePrice: string | undefined;
   public tradeTriggerPrice: string | undefined;
 
   title = 'BitvavoBot';
+
+  public get tradeAmount(): number | undefined {
+    const ta = this.tradeAmountRaw ? +this.tradeAmountRaw : undefined;
+    return ta && !isNaN(ta) && ta > 0 ? ta : undefined;
+  }
 
   constructor(private coinService: CoinService, cd: ChangeDetectorRef) {
     const sortFunc = (a: AssetVm, b: AssetVm) => {
@@ -45,6 +53,11 @@ export class AppComponent {
         });
       }
     });
+    this.coinService.openOrders$.subscribe({
+      next: (openOrders: OpenOrder[]) => {
+        this.syncOpenOrders(openOrders);
+      }
+    })
     this.coinService.start();
     //cd.detectChanges();
   }
@@ -57,7 +70,7 @@ export class AppComponent {
     let tradeTriggerPrice = this.tradeTriggerPrice ? +this.tradeTriggerPrice : undefined;
     tradeTriggerPrice = tradeTriggerPrice && !isNaN(tradeTriggerPrice) && tradeTriggerPrice > 0 ? tradeTriggerPrice : undefined;
     console.log('tradeAmount: ', tradeAmount, ', tradePrice: ', tradePrice, ', tradeTriggerPrice: ', tradeTriggerPrice);
-    
+
     if (isBuy) {
       if (!tradeAmount) {
         return;
@@ -69,7 +82,7 @@ export class AppComponent {
   }
 
   public get isBuyOrSellButtonEnabled(): boolean {
-    return this.tradeAmount !== undefined && this.tradeAmount !== '';
+    return this.tradeAmount !== undefined;
   }
 
   public onClickTableRow(event: Event, assetVm: AssetVm): void {
@@ -101,6 +114,34 @@ export class AppComponent {
       this.assetWithRowDetailsOpen.areRowDetailsOpen = false;
       asset.areRowDetailsOpen = true;
       this.assetWithRowDetailsOpen = asset;
+    }
+  }
+
+  private syncOpenOrders(openOrders: OpenOrder[]): void {
+    // tslint:disable-next-line: prefer-const
+    for (let openOrder of openOrders) {
+      const openOrderVm = this.openOrders.find(o => o.orderId === openOrder.orderId);
+      if (!openOrderVm) {
+        const newOpenOrderVm = new OpenOrderVm(openOrder);
+        this.openOrders.push(newOpenOrderVm);
+      } else {
+        openOrderVm.openOrder = openOrder;
+      }
+    }
+    const listToDelete: OpenOrderVm[] = [];
+    // tslint:disable-next-line: prefer-const
+    for (let openOrderVm of this.openOrders) {
+      const openOrder = openOrders.find(o => o.orderId === openOrderVm.orderId);
+      if (!openOrder) {
+        listToDelete.push(openOrderVm);
+      }
+    }
+    // tslint:disable-next-line: prefer-const
+    for (let openOrderVm of listToDelete) {
+      const index = this.openOrders.indexOf(openOrderVm);
+      if(index > -1) {
+        this.openOrders.splice(index, 1);
+      }
     }
   }
 }

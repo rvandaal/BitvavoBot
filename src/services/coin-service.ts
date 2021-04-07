@@ -3,9 +3,11 @@ import { Injectable } from '@angular/core';
 import { Observable, Subject } from 'rxjs';
 import { BitvavoService } from 'src/bitvavo.service';
 import { Asset } from 'src/models/asset';
+import { OpenOrder } from 'src/models/open-order';
 import { TickerPrice } from 'src/models/ticker-price';
 import { TickerPrice24h } from 'src/models/ticker-price-24h';
 import { Trade } from 'src/models/trade';
+import { PlaceOrderResponse } from 'src/response-models/place-order-response';
 
 // This class is responsible for converting response models into domain models.
 // It holds all relevant information that is not view specific and could be persisted.
@@ -23,19 +25,30 @@ export class CoinService {
     private intervalCounter = 0;
     private intervalId: NodeJS.Timeout | undefined;
     private assetsInternal: AssetDictionary;
+    private openOrdersInternal: OpenOrder[];
 
     private assetsSubject = new Subject<AssetDictionary>();
+    private openOrdersSubject = new Subject<OpenOrder[]>();
 
     public get assets(): AssetDictionary {
         return this.assetsInternal;
+    }
+
+    public get openOrders(): OpenOrder[] {
+        return this.openOrdersInternal;
     }
 
     public get assets$(): Observable<AssetDictionary> {
         return this.assetsSubject.asObservable();
     }
 
+    public get openOrders$(): Observable<OpenOrder[]> {
+        return this.openOrdersSubject.asObservable();
+    }
+
     constructor(private bitvavoService: BitvavoService) {
         this.assetsInternal = {};
+        this.openOrdersInternal = [];
     }
 
     public start(): void {
@@ -61,7 +74,7 @@ export class CoinService {
         tradeAmount: number,
         tradePrice: number | undefined,
         tradeTriggerPrice: number | undefined
-    ): Promise<void> {
+    ): Promise<PlaceOrderResponse> {
         return this.bitvavoService.placeBuyOrder(asset.euroTradingPair, tradeAmount, tradePrice, tradeTriggerPrice);
     }
 
@@ -70,7 +83,7 @@ export class CoinService {
         tradeAmount: number | undefined,
         tradePrice: number | undefined,
         tradeTriggerPrice: number | undefined
-    ): Promise<void> {
+    ): Promise<PlaceOrderResponse> {
         if (!tradeAmount) {
             tradeAmount = asset.available;
         }
@@ -142,6 +155,17 @@ export class CoinService {
         }
     }
 
+    private async updateOpenOrders(): Promise<void> {
+        this.openOrdersInternal = [];
+        const openOrderResponses = await this.bitvavoService.getOpenOrders();
+        // tslint:disable-next-line: prefer-const
+        for (let openOrderResponse of openOrderResponses) {
+            const openOrder = new OpenOrder(openOrderResponse);
+            this.openOrdersInternal.push(openOrder);
+        }
+        this.openOrdersSubject.next(this.openOrdersInternal);
+    }
+
     private performPeriodicTasks(): void {
         if (this.intervalCounter % 5 === 0) {
             this.performTasksWithInterval5s();
@@ -158,8 +182,10 @@ export class CoinService {
     }
 
     private async performTasksWithInterval5s(): Promise<void> {
+        await this.updateBalance();
         await this.updateTickerPrices();
         await this.updateTickerPrices24h();
+        await this.updateOpenOrders();
         this.performAnalysis();
     }
 

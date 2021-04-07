@@ -59,6 +59,16 @@ thead th {
     }
 }
 
+.open-order-buyOrSell {
+    &.negative {
+        color: #da003e;
+    }
+
+    &.positive {
+        color: #18ad76;
+    }
+}
+
 button.buy-sell {
     width: 130px;
 }

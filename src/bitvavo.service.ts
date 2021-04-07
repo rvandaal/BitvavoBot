@@ -5,6 +5,8 @@ import { AssetResponse } from './response-models/asset-response';
 import { BalanceResponse } from './response-models/balance-response';
 import { TradeResponse } from './response-models/trade-response';
 import { TickerPrice24hResponse } from './response-models/ticker-price-24h-response';
+import { PlaceOrderResponse } from './response-models/place-order-response';
+import { OpenOrderResponse } from './response-models/open-order-response';
 declare var require: any;
 const { bitvavo } = require('./bitvavo-api');
 
@@ -65,12 +67,12 @@ export class BitvavoService {
     // })
   }
 
-  public async placeBuyOrder(
+  public async placeBuyOrder (
     market: string,
     tradeAmount: number,
     tradePrice: number | undefined,
     tradeTriggerPrice: number | undefined
-  ): Promise<void> {
+  ): Promise<PlaceOrderResponse> {
     return this.placeOrder(market, true, tradeAmount, tradePrice, tradeTriggerPrice);
   }
 
@@ -79,7 +81,7 @@ export class BitvavoService {
     tradeAmount: number,
     tradePrice: number | undefined,
     tradeTriggerPrice: number | undefined
-  ): Promise<void> {
+  ): Promise<PlaceOrderResponse> {
     return this.placeOrder(market, false, tradeAmount, tradePrice, tradeTriggerPrice);
   }
 
@@ -89,10 +91,7 @@ export class BitvavoService {
     tradeAmount: number,
     tradePrice: number | undefined,
     tradeTriggerPrice: number | undefined
-  ): Promise<void> {
-    if (!tradeAmount) {
-      return;
-    }
+  ): Promise<PlaceOrderResponse> {
     const side = isBuy ? 'buy' : 'sell';
     let response;
     if (tradePrice && tradeTriggerPrice) {
@@ -103,6 +102,7 @@ export class BitvavoService {
       response = await bitvavo.placeOrder(market, side, 'market', { amount: tradeAmount });
     }
     console.log('place order response: ', response);
+    return new PlaceOrderResponse(response);
   }
 
   public async getTrades(asset: Asset): Promise<TradeResponse[]> {
@@ -154,6 +154,27 @@ export class BitvavoService {
           const symbol = item.market.substr(0, index);
           if (!['EUR', 'AE', 'DASH'].includes(symbol)) {
             list.push(new TickerPrice24hResponse(item));
+          }
+        }
+        return list;
+      }
+      return [];
+    } catch (error) {
+      return Promise.reject();
+    }
+  }
+
+  public async getOpenOrders(): Promise<OpenOrderResponse[]> {
+    try {
+      if (this.ensurePositiveLimit()) {
+        const list: OpenOrderResponse[] = [];
+        const response = await bitvavo.ordersOpen({});
+        // tslint:disable-next-line: prefer-const
+        for (let item of response) {
+          const index = item.market.indexOf('-');
+          const symbol = item.market.substr(0, index);
+          if (!['EUR', 'AE', 'DASH'].includes(symbol)) {
+            list.push(new OpenOrderResponse(item));
           }
         }
         return list;

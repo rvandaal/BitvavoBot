@@ -51,8 +51,112 @@
                           <path fill-rule="evenodd" d="M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0z"/>
                         </svg>
                       </button>
+                    </td>
                   </tr>
                   <tr *ngIf="asset.areRowDetailsOpen && (showAllCoins || asset.totalAmount > 0)">
+                    <th scope="row" style="width: 5%"></th>
+                    <td scope="row" style="width: 5%"></td>
+                    <td colspan="8">
+                      <div class="d-flex flex-row justify-content-start">
+                        <div class="d-flex flex-row align-items-center">
+                            <button class="btn btn-success buy-sell" [disabled]="!isBuyOrSellButtonEnabled" (click)="onBuyOrSellButtonClick(asset, true)">Kopen</button>
+                            <input type="text" class="form-control buy-sell ml-2" placeholder="Hoeveelheid" [(ngModel)]="tradeAmountRaw">
+                            <input type="text" class="form-control buy-sell ml-2" placeholder="{{asset.currentPrice}}" [(ngModel)]="tradePrice">
+                            <input type="text" class="form-control buy-sell ml-2" placeholder="Trigger" [(ngModel)]="tradeTriggerPrice">
+                            <button class="btn btn-danger buy-sell ml-2" (click)="onBuyOrSellButtonClick(asset, false)">{{tradeAmount && tradeAmount > 0 ? 'Verkopen' : 'Alles verkopen'}}</button>
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
+                </ng-container>
+              </tbody>
+            </table>
+            <table class="table table-striped flex-fill" *ngIf="trades">
+              <thead>
+                <tr>
+                  <th scope="col">#</th>
+                  <th scope="col">Market</th>
+                  <th scope="col">Type</th>
+                  <th scope="col">Date</th>
+                  <th scope="col">Amount</th>
+                  <th scope="col">Total Amount</th>
+                  <th scope="col">Euro</th>
+                  <th scope="col">Total Euro</th>
+                  <th scope="col">Price</th>
+                </tr>
+              </thead>
+              <tbody>
+              <tr *ngFor="let trade of trades; index as i" [ngClass]="trade.isBuy ? 'table-success' : 'table-danger'">
+                <th scope="row">{{ i + 1 }}</th>
+                <td>{{ trade.market }}</td>
+                <td>{{ trade.isBuy ? 'Aankoop' : 'Verkoop' }}</td>
+                <td>{{ trade.date | date : 'medium' : 'nl-NL' }}</td>
+                <td>{{ trade.amount | number: '0.0-4' }}</td>
+                <td>{{ trade.totalAmount | number: '0.0-4' }}</td>
+                <td>{{ trade.euroAmount | number: '0.2-2' }}</td>
+                <td>{{ trade.totalEuroAmount | number: '0.2-2' }}</td>
+                <td>{{ trade.price | number: '0.2-6' }}</td>
+              </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </ng-template>
+    </li>
+    <li ngbNavItem>
+      <a ngbNavLink>Open orders</a>
+      <ng-template ngbNavContent>
+        <div class="d-flex flex-column">         
+          <div class="d-flex flex-row">
+            <table class="table flex-fill">
+              <thead>
+                <tr>
+                  <th scope="col" style="width: 5%">#</th>
+                  <th scope="col" style="width: 5%"></th>
+                  <th scope="col" style="width: 10%">Markt</th>
+                  <th scope="col" style="width: 10%">Type</th>
+                  <th scope="col" style="width: 10%">Order type</th>
+                  <th scope="col" style="width: 10%">Open</th>
+                  <th scope="col" style="width: 10%">Filled</th>
+                  <!-- <th scope="col" style="width: 5%">Verandering 24h</th>
+                  <th scope="col" style="width: 5%">Relatieve verandering</th>
+                  <th scope="col" style="width: 10%">#verhogingen achter elkaar</th>
+                  <th scope="col" style="width: 10%">Hoeveelheid</th>
+                  <th scope="col" style="width: 10%">Waarde</th>
+                  <th scope="col" style="width: 10%">Investering</th>
+                  <th scope="col" style="width: 5%"></th> -->
+                </tr>
+              </thead>
+              <tbody>
+                <ng-container *ngFor="let openOrder of openOrders; index as i">
+                  <tr>
+                    <th scope="row" style="width: 5%">{{ i + 1 }}</th>
+                    <td style="width: 5%">
+                      <i style="margin: -4px 0 0 0" class="icn" [ngClass]="'icn-' + openOrder.symbol.toLowerCase()"></i>
+                    </td>
+                    <td style="width: 10%">{{openOrder.market}}</td>
+                    <td style="width: 10%" class="open-order-buyOrSell" [ngClass]="openOrder.isBuy ? 'positive' : 'negative'">{{ openOrder.isBuy ? "Buy" : "Sell" }}</td>
+                    <td style="width: 10%">{{ openOrder.orderType }}</td>
+                    <td style="width: 10%">{{ openOrder.amountRemaining | number: '0.2-6' }} <span class="symbol">{{openOrder.symbol}}</span></td>
+                    <td style="width: 10%">{{ openOrder.filledAmount | number: '0.2-6' }} <span class="symbol">{{openOrder.symbol}}</span></td>
+                    <!-- <td style="width: 5%"><span class="change24h" [ngClass]="asset.change24h > 0 ? 'positive' : 'negative'">{{ asset.change24h | number: '0.2-2' }}%</span></td>
+                    <td style="width: 5%"><span class="relativeChange" *ngIf="asset.relativeChange" [ngClass]="asset.relativeChange > 0 ? 'positive' : 'negative'">{{ asset.relativeChange | number: '0.2-2' }}%</span></td>
+                    <td style="width: 10%"><span class="numberOfSubsequentIncreasements">{{ asset.numberOfSubsequentIncreasements | number: '0.0-0' }}</span></td>
+                    <td style="width: 10%"><span *ngIf="asset.totalAmount > 0">{{ asset.totalAmount | number: '0.0-4' }} <span class="symbol">{{ asset.symbol }}</span></span></td>
+                    <td style="width: 10%"><span *ngIf="asset.currentValue > 0">{{ asset.currentValue| number: '0.2-2' }} <span class="symbol">EUR</span></span></td>
+                    <td style="width: 10%"><span *ngIf="asset.investment !== 0">{{ asset.investment| number: '0.2-2' }} <span class="symbol">EUR</span></span></td>
+                    <td style="width: 5%">
+                      <button *ngIf="asset.symbol !== 'EUR'" class="btn btn-sm" style="padding: 3px 8px" (click)="onClickTableRow($event, asset)">
+                        <svg *ngIf="assetWithTradeDetailsOpen !== asset" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chevron-right" viewBox="0 0 16 16">
+                          <path fill-rule="evenodd" d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708z"/>
+                        </svg>
+                        <svg *ngIf="assetWithTradeDetailsOpen === asset" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chevron-left" viewBox="0 0 16 16">
+                          <path fill-rule="evenodd" d="M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0z"/>
+                        </svg>
+                      </button>
+                    </td> -->
+                  </tr>
+                  <!-- <tr *ngIf="asset.areRowDetailsOpen && (showAllCoins || asset.totalAmount > 0)">
                     <th scope="row" style="width: 5%"></th>
                     <td scope="row" style="width: 5%"></td>
                     <td colspan="8">
@@ -66,7 +170,7 @@
                         </div>
                       </div>
                     </td>
-                  </tr>
+                  </tr> -->
                 </ng-container>
               </tbody>
             </table>
