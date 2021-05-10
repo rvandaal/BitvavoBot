@@ -1,4 +1,5 @@
 import { textChangeRangeIsUnchanged } from 'typescript';
+import { Market } from './market';
 import { TickerPrice } from './ticker-price';
 import { TickerPrice24h } from './ticker-price-24h';
 import { Trade } from './trade';
@@ -17,6 +18,7 @@ export class Asset {
     public minPrice: number;
     public maxPrice: number;
     public numberOfSubsequentIncreasements: number;
+    public euroMarket: Market;
 
     constructor(symbol: string, name: string) {
         this.symbol = symbol;
@@ -29,6 +31,7 @@ export class Asset {
         this.minPrice = 0;
         this.maxPrice = 0;
         this.numberOfSubsequentIncreasements = 0;
+        this.euroMarket = new Market(symbol + '-EUR');
     }
 
     public get trades(): Trade[] | undefined {

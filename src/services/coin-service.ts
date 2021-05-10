@@ -3,11 +3,15 @@ import { Injectable } from '@angular/core';
 import { Observable, Subject } from 'rxjs';
 import { BitvavoService } from 'src/bitvavo.service';
 import { Asset } from 'src/models/asset';
+import { Market } from 'src/models/market';
 import { OpenOrder } from 'src/models/open-order';
 import { TickerPrice } from 'src/models/ticker-price';
 import { TickerPrice24h } from 'src/models/ticker-price-24h';
 import { Trade } from 'src/models/trade';
 import { PlaceOrderResponse } from 'src/response-models/place-order-response';
+import { CoinBot } from 'src/trading/coin-bot';
+import { GridCoinBot } from 'src/trading/grid-coin-bot';
+import { IGridConfig } from 'src/trading/i-grid-config';
 
 // This class is responsible for converting response models into domain models.
 // It holds all relevant information that is not view specific and could be persisted.
@@ -15,6 +19,7 @@ import { PlaceOrderResponse } from 'src/response-models/place-order-response';
 
 
 export type AssetDictionary = Record<string, Asset>;
+export type BotOrderDictionary = Record<string, CoinBot>;
 
 
 @Injectable({
@@ -25,30 +30,21 @@ export class CoinService {
     private intervalCounter = 0;
     private intervalId: NodeJS.Timeout | undefined;
     private assetsInternal: AssetDictionary;
-    private openOrdersInternal: OpenOrder[];
+    private botOrdersInternal: BotOrderDictionary;
 
-    private assetsSubject = new Subject<AssetDictionary>();
-    private openOrdersSubject = new Subject<OpenOrder[]>();
+    private notificationsSubject = new Subject<void>();
 
     public get assets(): AssetDictionary {
         return this.assetsInternal;
     }
 
-    public get openOrders(): OpenOrder[] {
-        return this.openOrdersInternal;
-    }
-
-    public get assets$(): Observable<AssetDictionary> {
-        return this.assetsSubject.asObservable();
-    }
-
-    public get openOrders$(): Observable<OpenOrder[]> {
-        return this.openOrdersSubject.asObservable();
+    public get notifications$(): Observable<void> {
+        return this.notificationsSubject.asObservable();
     }
 
     constructor(private bitvavoService: BitvavoService) {
         this.assetsInternal = {};
-        this.openOrdersInternal = [];
+        this.botOrdersInternal = {};
     }
 
     public start(): void {
@@ -58,7 +54,6 @@ export class CoinService {
             this.intervalCounter = 0;
             this.intervalId = setInterval(() => {
                 this.performPeriodicTasks();
-                //this.assetsSubject.next(this.assets);
             }, this.smallestInterval);
         })();
     }
@@ -75,7 +70,9 @@ export class CoinService {
         tradePrice: number | undefined,
         tradeTriggerPrice: number | undefined
     ): Promise<PlaceOrderResponse> {
-        return this.bitvavoService.placeBuyOrder(asset.euroTradingPair, tradeAmount, tradePrice, tradeTriggerPrice);
+        const result = this.bitvavoService.placeBuyOrder(asset.euroTradingPair, tradeAmount, tradePrice, tradeTriggerPrice);
+        console.log(result);
+        return result;
     }
 
     public placeSellOrder(
@@ -106,13 +103,24 @@ export class CoinService {
         asset.trades = this.groupTrades(list);
     }
 
+    public registerBotForOpenOrder(orderId: string, bot: CoinBot): void { // called by bot
+        this.botOrdersInternal[orderId] = bot;
+    }
+
+    private performPeriodicTasks(): void {
+        if (this.intervalCounter % 5 === 0) {
+            this.performTasksWithInterval5s();
+            this.intervalCounter = 0; // change if other tasks of >5s are added
+        }
+        this.intervalCounter++;
+    }
+
     private async updateAssets(): Promise<void> {
         const assetResponses = await this.bitvavoService.getAssets();
         // tslint:disable-next-line: prefer-const
         for (let assetResponse of assetResponses) {
             this.assetsInternal[assetResponse.symbol] = new Asset(assetResponse.symbol, assetResponse.name);
         }
-        this.assetsSubject.next(this.assetsInternal);
     }
 
     private async updateBalance(): Promise<void> {
@@ -156,22 +164,50 @@ export class CoinService {
     }
 
     private async updateOpenOrders(): Promise<void> {
-        this.openOrdersInternal = [];
         const openOrderResponses = await this.bitvavoService.getOpenOrders();
         // tslint:disable-next-line: prefer-const
         for (let openOrderResponse of openOrderResponses) {
-            const openOrder = new OpenOrder(openOrderResponse);
-            this.openOrdersInternal.push(openOrder);
-        }
-        this.openOrdersSubject.next(this.openOrdersInternal);
-    }
+            const marketName = openOrderResponse.market;
+            const market = new Market(marketName);
+            const currency = market.currency;
+            const asset = this.assetsInternal[currency];
 
-    private performPeriodicTasks(): void {
-        if (this.intervalCounter % 5 === 0) {
-            this.performTasksWithInterval5s();
-            this.intervalCounter = 0; // change if other tasks of >5s are added
+            if (asset && market.baseCurrency === 'EUR') {
+                const openOrders = asset.euroMarket.openOrders;
+                const existingOpenOrder = openOrders.find(o => o.orderId === openOrderResponse.orderId);
+                if (existingOpenOrder) {
+                    existingOpenOrder.openOrderResponse = openOrderResponse;
+                } else {
+                    const openOrder = new OpenOrder(openOrderResponse, asset.euroMarket);
+                    openOrders.push(openOrder);
+                }
+            } else {
+                throw new Error('Asset that is referenced by open order does not exist');
+            }
         }
-        this.intervalCounter++;
+
+        Object.keys(this.assetsInternal).forEach(key => {
+            const asset = this.assets[key];
+            const openOrders = asset.euroMarket.openOrders;
+            // tslint:disable-next-line: prefer-const
+            const listToDelete: number[] = [];
+            // tslint:disable-next-line: prefer-const
+            openOrders.forEach((openOrder, index) => {
+                const openOrderResponse = openOrderResponses.find(o => o.orderId === openOrder.orderId);
+                if (!openOrderResponse) {
+                    const bot = this.botOrdersInternal[openOrder.orderId];
+                    if (bot) {
+                        // Order is filled and there is a bot waiting for it.
+                        bot.processFilledOrder(openOrder.orderId);
+                        delete this.botOrdersInternal[openOrder.orderId];
+                    }
+                    listToDelete.push(index);
+                }
+            });
+            for (let j = listToDelete.length - 1; j >= 0; j--) {
+                openOrders.splice(listToDelete[j], 1);
+            }
+        });
     }
 
     private performAnalysis(): void {
@@ -187,6 +223,7 @@ export class CoinService {
         await this.updateTickerPrices24h();
         await this.updateOpenOrders();
         this.performAnalysis();
+        this.notificationsSubject.next();
     }
 
     private groupTrades(trades: Trade[]): Trade[] {

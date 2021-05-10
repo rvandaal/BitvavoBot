@@ -1,11 +1,27 @@
 import { Asset } from 'src/models/asset';
 import { Trade } from 'src/models/trade';
+import { updateTypeAssertion } from 'typescript';
+import { MarketVm } from './market-vm';
 
 export class AssetVm {
     public areRowDetailsOpen: boolean;
+    public marketVm: MarketVm;
+    private assetInternal: Asset;
 
-    constructor(public asset: Asset) {
+    constructor(asset: Asset) {
+        this.assetInternal = asset;
         this.areRowDetailsOpen = false;
+        this.marketVm = new MarketVm(asset.euroMarket);
+        this.updateAsset();
+    }
+
+    public get asset(): Asset {
+        return this.assetInternal;
+    }
+
+    public set asset(value: Asset) {
+        this.assetInternal = value;
+        this.updateAsset();
     }
 
     public get symbol(): string {
@@ -62,5 +78,9 @@ export class AssetVm {
 
     public get trades(): Trade[] | undefined {
         return this.asset.trades;
+    }
+
+    private updateAsset(): void {
+        this.marketVm.market = this.assetInternal.euroMarket;
     }
 }

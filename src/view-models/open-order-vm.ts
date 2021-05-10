@@ -13,13 +13,13 @@ export class OpenOrderVm {
         return this.openOrder.orderType;
     }
 
-    public get symbol(): string {
-        return this.openOrder.symbol;
-    }
+    // public get symbol(): string {
+    //     return this.openOrder.symbol;
+    // }
 
-    public get market(): string {
-        return this.openOrder.market;
-    }
+    // public get market(): string {
+    //     return this.openOrder.market;
+    // }
 
     public get isBuy(): boolean {
         return this.openOrder.isBuy;

@@ -1,13 +1,12 @@
 import { OpenOrderResponse } from 'src/response-models/open-order-response';
+import { Market } from './market';
 
 export class OpenOrder {
 
-    public symbol: string;
+    public market: Market;
 
-    constructor(private openOrderResponse: OpenOrderResponse) {
-        const market = openOrderResponse.market;
-        const index = market.indexOf('-');
-        this.symbol = market.substr(0, index);
+    constructor(public openOrderResponse: OpenOrderResponse, market: Market) {
+        this.market = market;
     }
 
     public get orderId(): string {
@@ -16,10 +15,6 @@ export class OpenOrder {
 
     public get orderType(): string {
         return this.openOrderResponse.orderType;
-    }
-
-    public get market(): string {
-        return this.openOrderResponse.market;
     }
 
     public get isBuy(): boolean {

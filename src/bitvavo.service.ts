@@ -97,9 +97,14 @@ export class BitvavoService {
     if (tradePrice && tradeTriggerPrice) {
       // todo
     } else if (tradePrice) {
+
+      // round to 0 decimals // change for other COINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+      tradePrice = Math.round(tradePrice);
+
+
       response = await bitvavo.placeOrder(market, side, 'limit', { amount: tradeAmount, price: tradePrice });
     } else {
-      response = await bitvavo.placeOrder(market, side, 'market', { amount: tradeAmount });
+      response = await bitvavo.placeOrder(market, side, 'market', { amount: tradeAmount});
     }
     console.log('place order response: ', response);
     return new PlaceOrderResponse(response);
