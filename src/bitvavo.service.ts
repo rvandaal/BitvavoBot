@@ -106,7 +106,7 @@ export class BitvavoService {
     } else {
       response = await bitvavo.placeOrder(market, side, 'market', { amount: tradeAmount});
     }
-    console.log('place order response: ', response);
+    console.log('amountRemaining: ', response.amountRemaining);
     return new PlaceOrderResponse(response);
   }
 

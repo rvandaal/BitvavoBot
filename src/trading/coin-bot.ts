@@ -1,6 +1,9 @@
 // Performs trading for one particular coin
 // Multiple coinbots can exist for the same coin, each with different settings
 
+import { Asset } from 'src/models/asset';
+import { Trade } from 'src/models/trade';
+
 export class CoinBot {
     // private positions: Position[];
     // private config: BotConfig
@@ -14,8 +17,14 @@ export class CoinBot {
     // of het bedrag niet te groot is. Ook kan deze subscriben om te kijken
     // of een order gefilled is.
 
-    public processFilledOrder(orderId: string) {
+    public readonly asset: Asset;
 
+    constructor(asset: Asset) {
+        this.asset = asset;
+    }
+
+    public processFilledOrder(orderId: string, trades: Trade[]): boolean {
+        return false;
     }
     
 }

@@ -2,6 +2,7 @@ import { stringify } from '@angular/compiler/src/util';
 import { Injectable } from '@angular/core';
 import { Observable, Subject } from 'rxjs';
 import { BitvavoService } from 'src/bitvavo.service';
+import { loga, logr } from 'src/logr';
 import { Asset } from 'src/models/asset';
 import { Market } from 'src/models/market';
 import { OpenOrder } from 'src/models/open-order';
@@ -31,6 +32,7 @@ export class CoinService {
     private intervalId: NodeJS.Timeout | undefined;
     private assetsInternal: AssetDictionary;
     private botOrdersInternal: BotOrderDictionary;
+    private activeBots: CoinBot[] = [];
 
     private notificationsSubject = new Subject<void>();
 
@@ -58,6 +60,12 @@ export class CoinService {
         })();
     }
 
+    public registerBotForTradeUpdates(bot: CoinBot): void {
+        if (!this.activeBots.includes(bot)) {
+            this.activeBots.push(bot);
+        }
+    }
+
     public stop(): void {
         if (this.intervalId) {
             clearInterval(this.intervalId);
@@ -82,33 +90,55 @@ export class CoinService {
         tradeTriggerPrice: number | undefined
     ): Promise<PlaceOrderResponse> {
         if (!tradeAmount) {
-            tradeAmount = asset.available;
+            tradeAmount = asset.available; // sell all (that is not in order)
         }
         return this.bitvavoService.placeSellOrder(asset.euroTradingPair, tradeAmount, tradePrice, tradeTriggerPrice);
     }
 
-    public async updateTrade(asset: Asset): Promise<void> {
+    @loga()
+    public async updateTrades(asset: Asset): Promise<void> {
         const tradeResponses = await this.bitvavoService.getTrades(asset);
-        const list = tradeResponses.map(
-            tradeResponse =>
-                new Trade(
-                    tradeResponse.market,
-                    tradeResponse.amount,
-                    tradeResponse.price,
-                    tradeResponse.isBuy,
-                    tradeResponse.date,
-                    tradeResponse.fee
-                )
-            );
-        asset.trades = this.groupTrades(list);
+        //const list = tradeResponses.map(tradeResponse => new Trade(tradeResponse));
+        //asset.trades = list; // this.groupTrades(list);
+
+        if (!asset.trades) {
+            return;
+        }
+        // We doen weer item voor item omdat trade nu state bevat die we willen behouden
+        // Echter, om te kijken welke trades nog niet matchen met een open order, willen we
+        // de hele lijst steeds opnieuw bekijken, niet alleen een nieuwe trade doorgeven.
+        // Hij kan ook pas later gesettled worden.
+
+        // tslint:disable-next-line: prefer-const
+        for (let tradeResponse of tradeResponses) {
+            const existingTrade = asset.trades.find(t => t.id === tradeResponse.id);
+            if (!existingTrade) {
+                const trade = new Trade(tradeResponse);
+                asset.trades.push(trade);
+                // notify bots, an open order can be matched with this trade
+                // this.botOrdersInternal[trade.orderId].processFilledOrder(trade.orderId);
+            }
+        }
+        const listToDelete: number[] = [];
+        asset.trades.forEach((trade, index) => {
+            const existingTradeResponse = tradeResponses.find(t => t.id === trade.id);
+            if (!existingTradeResponse) {
+                listToDelete.push(index);
+            }
+        });
+        for (let j = listToDelete.length - 1; j >= 0; j--) {
+            asset.trades.splice(listToDelete[j], 1);
+        }
     }
 
+    @loga()
     public registerBotForOpenOrder(orderId: string, bot: CoinBot): void { // called by bot
         this.botOrdersInternal[orderId] = bot;
     }
 
     private performPeriodicTasks(): void {
-        if (this.intervalCounter % 5 === 0) {
+        if (this.intervalCounter % 3 === 0) {
+            this.performTasksWithInterval1s(); // todo: verplaatsen boven de 5 check
             this.performTasksWithInterval5s();
             this.intervalCounter = 0; // change if other tasks of >5s are added
         }
@@ -123,7 +153,7 @@ export class CoinService {
         }
     }
 
-    private async updateBalance(): Promise<void> {
+    public async updateBalance(): Promise<void> {
         const balanceResponses = await this.bitvavoService.getBalance();
         // tslint:disable-next-line: prefer-const
         for (let balanceResponse of balanceResponses) {
@@ -188,19 +218,29 @@ export class CoinService {
 
         Object.keys(this.assetsInternal).forEach(key => {
             const asset = this.assets[key];
-            const openOrders = asset.euroMarket.openOrders;
+            const openOrders = asset.euroMarket.openOrders; // normaal gesproken heeft model link naar responsemodel, hier niet..?!
             // tslint:disable-next-line: prefer-const
             const listToDelete: number[] = [];
+            let first = true;
             // tslint:disable-next-line: prefer-const
-            openOrders.forEach((openOrder, index) => {
+            openOrders.forEach(async (openOrder, index) => {
                 const openOrderResponse = openOrderResponses.find(o => o.orderId === openOrder.orderId);
                 if (!openOrderResponse) {
+                    // Open order is removed so it is filled
+                    // Is there a bot waiting to update?
                     const bot = this.botOrdersInternal[openOrder.orderId];
                     if (bot) {
                         // Order is filled and there is a bot waiting for it.
-                        bot.processFilledOrder(openOrder.orderId);
-                        delete this.botOrdersInternal[openOrder.orderId];
+                        // bot.processFilledOrder(openOrder.orderId);
+                        // First get trades up to date
+                        if (first) {
+                            await this.updateTrades(asset); // needed only once per asset
+                            first = false;
+                        }
+                        const tradesWhichFilledTheOrder = asset.trades.filter(t => t.orderId === openOrder.orderId);
+                        bot.processFilledOrder(openOrder.orderId, tradesWhichFilledTheOrder);
                     }
+                    delete this.botOrdersInternal[openOrder.orderId];
                     listToDelete.push(index);
                 }
             });
@@ -217,66 +257,84 @@ export class CoinService {
         });
     }
 
+    private async performTasksWithInterval1s(): Promise<void> {
+        await this.updateOpenOrders();
+        // this.activeBots.forEach(async b => {
+        //     logr('Check trades for bot: ' + b.asset.symbol);
+        //     await this.updateTrades(b.asset);
+        //     b.asset.trades?.forEach(t => {
+        //         if (!t.isMatchedWithOpenOrder) {
+        //             console.log('Trade that is not yet matched against open order: ', t);
+        //             if (t.settled) {
+        //                 console.log('Found settled trade that is not yet matched against open order: ', t);
+        //                 if (b.processFilledOrder(t.orderId)) {
+        //                     t.isMatchedWithOpenOrder = true;
+        //                 }
+        //             }
+        //         }
+        //     });
+        // });
+    }
+
     private async performTasksWithInterval5s(): Promise<void> {
         await this.updateBalance();
         await this.updateTickerPrices();
         await this.updateTickerPrices24h();
-        await this.updateOpenOrders();
         this.performAnalysis();
         this.notificationsSubject.next();
     }
 
-    private groupTrades(trades: Trade[]): Trade[] {
-        const groupedList: Trade[] = [];
-        let currentDate: Date | undefined;
-        let currentPrice: number | undefined;
-        let currentIsBuy: boolean | undefined;
-        let groupedTrade: Trade | undefined;
+    // private groupTrades(trades: Trade[]): Trade[] {
+    //     const groupedList: Trade[] = [];
+    //     let currentDate: Date | undefined;
+    //     let currentPrice: number | undefined;
+    //     let currentIsBuy: boolean | undefined;
+    //     let groupedTrade: Trade | undefined;
 
-        // tslint:disable-next-line: prefer-const
-        for (let item of trades) {
-            const date = item.date;
-            if (
-                !currentDate || Math.abs(date.getTime() - currentDate?.getTime()) > 1000 ||
-                currentPrice !== item.price ||
-                currentIsBuy !== item.isBuy
-            ) {
-                if (groupedTrade) {
-                    groupedList.push(groupedTrade);
-                }
-                const euroAmount = item.isBuy ?
-                    (item.amount * item.price + item.fee) :
-                    ((item.amount * item.price - item.fee));
-                groupedTrade =
-                    new Trade(item.market, item.amount, item.price, item.isBuy, date, item.fee);
-                groupedTrade.euroAmount = euroAmount;
-                currentDate = date;
-                currentPrice = item.price;
-                currentIsBuy = item.isBuy;
-            } else if (groupedTrade) {
-                groupedTrade.amount += item.amount;
-                groupedTrade.euroAmount += item.isBuy ?
-                    (item.amount * item.price + item.fee) :
-                    (item.amount * item.price - item.fee);
-                groupedTrade.fee += item.fee;
-            }
-        }
-        if(groupedTrade) {
-            groupedList.push(groupedTrade);
-        }
-        // Compute totals
-        for (let i = groupedList.length - 1; i >= 0; i--) {
-            const item = groupedList[i];
-            let previousTotal = 0;
-            let previousTotalEuro = 0;
-            if (i < groupedList.length - 1) {
-                previousTotal = groupedList[i + 1].totalAmount;
-                previousTotalEuro = groupedList[i + 1].totalEuroAmount;
-            }
-            item.totalAmount = previousTotal + (item.isBuy ? item.amount : -item.amount);
-            item.totalEuroAmount = previousTotalEuro + (item.isBuy ? item.euroAmount : -item.euroAmount);
-        }
+    //     // tslint:disable-next-line: prefer-const
+    //     for (let item of trades) {
+    //         const date = item.date;
+    //         if (
+    //             !currentDate || Math.abs(date.getTime() - currentDate?.getTime()) > 1000 ||
+    //             currentPrice !== item.price ||
+    //             currentIsBuy !== item.isBuy
+    //         ) {
+    //             if (groupedTrade) {
+    //                 groupedList.push(groupedTrade);
+    //             }
+    //             const euroAmount = item.isBuy ?
+    //                 (item.amount * item.price + item.fee) :
+    //                 ((item.amount * item.price - item.fee));
+    //             groupedTrade =
+    //                 new Trade(item.market, item.amount, item.price, item.isBuy, date, item.fee);
+    //             groupedTrade.euroAmount = euroAmount;
+    //             currentDate = date;
+    //             currentPrice = item.price;
+    //             currentIsBuy = item.isBuy;
+    //         } else if (groupedTrade) {
+    //             groupedTrade.amount += item.amount;
+    //             groupedTrade.euroAmount += item.isBuy ?
+    //                 (item.amount * item.price + item.fee) :
+    //                 (item.amount * item.price - item.fee);
+    //             groupedTrade.fee += item.fee;
+    //         }
+    //     }
+    //     if(groupedTrade) {
+    //         groupedList.push(groupedTrade);
+    //     }
+    //     // Compute totals
+    //     for (let i = groupedList.length - 1; i >= 0; i--) {
+    //         const item = groupedList[i];
+    //         let previousTotal = 0;
+    //         let previousTotalEuro = 0;
+    //         if (i < groupedList.length - 1) {
+    //             previousTotal = groupedList[i + 1].totalAmount;
+    //             previousTotalEuro = groupedList[i + 1].totalEuroAmount;
+    //         }
+    //         item.totalAmount = previousTotal + (item.isBuy ? item.amount : -item.amount);
+    //         item.totalEuroAmount = previousTotalEuro + (item.isBuy ? item.euroAmount : -item.euroAmount);
+    //     }
 
-        return groupedList;
-    }
+    //     return groupedList;
+    // }
 }

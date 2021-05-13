@@ -56,29 +56,18 @@ export class AppComponent {
   }
 
   public onStartGridBotClick(): void {
-    const ethAsset = this.coinService.assets['BTC'];
+    const ethAsset = this.coinService.assets['ETH'];
     const config: IGridConfig = {
         asset: ethAsset,
-        numberOfGridLines: 30,
-        halfRange: 300
+        numberOfGridLines: 31, // has to be odd
+        halfRange: 60,
+        totalInvestmentInEuro: 180
     };
+    if (config.numberOfGridLines % 2 === 0) {
+      alert('number of gridlines must be odd');
+    }
     const gridBot = new GridCoinBot(config, this.coinService);
     gridBot.start();
-  }
-
-  private handleNotifications(): void {
-    const assets = this.coinService.assets;
-    Object.keys(assets).forEach(key => {
-      const asset = assets[key];
-      const assetVm = this.assets.find(a => a.symbol === asset.symbol);
-      if (!assetVm) {
-        const newAssetVm = new AssetVm(asset);
-        this.assets.push(newAssetVm);
-      } else {
-        assetVm.asset = asset;
-      }
-    });
-    // todo: delete assetVm's if they are not in the model anymore.
   }
 
   public get openOrderMarkets(): MarketVm[] {
@@ -112,7 +101,7 @@ export class AppComponent {
   public onClickTableRow(event: Event, assetVm: AssetVm): void {
     (async () => {
       if (!assetVm.trades) {
-        await this.coinService.updateTrade(assetVm.asset);
+        await this.coinService.updateTrades(assetVm.asset);
       }
       if (!this.assetWithTradeDetailsOpen || this.assetWithTradeDetailsOpen !== assetVm) {
         this.trades = assetVm.trades;
@@ -155,6 +144,21 @@ export class AppComponent {
       market.areRowDetailsOpen = true;
       this.openOrderMarketWithRowDetailsOpen = market;
     }
+  }
+
+  private handleNotifications(): void {
+    const assets = this.coinService.assets;
+    Object.keys(assets).forEach(key => {
+      const asset = assets[key];
+      const assetVm = this.assets.find(a => a.symbol === asset.symbol);
+      if (!assetVm) {
+        const newAssetVm = new AssetVm(asset);
+        this.assets.push(newAssetVm);
+      } else {
+        assetVm.asset = asset;
+      }
+    });
+    // todo: delete assetVm's if they are not in the model anymore.
   }
 
   private syncOpenOrders(): void {

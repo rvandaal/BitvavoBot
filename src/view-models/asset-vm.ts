@@ -1,6 +1,5 @@
 import { Asset } from 'src/models/asset';
 import { Trade } from 'src/models/trade';
-import { updateTypeAssertion } from 'typescript';
 import { MarketVm } from './market-vm';
 
 export class AssetVm {

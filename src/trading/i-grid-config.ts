@@ -5,6 +5,6 @@ export interface IGridConfig {
     maxBoundary?: number;
     minBoundary?: number;
     halfRange?: number; // if you fill this in, min and max will be ignored
-    numberOfGridLines: number;
-    totalInvestment?: number;
+    numberOfGridLines: number; // must be an odd number
+    totalInvestmentInEuro: number; // you can never loose more than this
 }

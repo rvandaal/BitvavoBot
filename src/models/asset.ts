@@ -5,7 +5,7 @@ import { TickerPrice24h } from './ticker-price-24h';
 import { Trade } from './trade';
 
 export class Asset {
-    private tradesInternal?: Trade[];
+    private tradesInternal: Trade[] = [];
     private tickerPricesInternal: TickerPrice[];
 
     public readonly symbol: string; // should be uppercase
@@ -34,16 +34,16 @@ export class Asset {
         this.euroMarket = new Market(symbol + '-EUR');
     }
 
-    public get trades(): Trade[] | undefined {
+    public get trades(): Trade[] {
         return this.tradesInternal;
     }
 
-    public set trades(value: Trade[] | undefined) {
-        this.tradesInternal = value;
-        if (this.tradesInternal && this.tradesInternal.length) {
-            this.investment = this.tradesInternal[0].totalEuroAmount;
-        }
-    }
+    // public set trades(value: Trade[] | undefined) {
+    //     this.tradesInternal = value;
+    //     if (this.tradesInternal && this.tradesInternal.length) {
+    //         this.investment = this.tradesInternal[0].totalEuroAmount;
+    //     }
+    // }
 
     public get tickerPrices(): TickerPrice[] {
         return this.tickerPricesInternal;
