@@ -1,7 +1,7 @@
 import { GridBot } from 'src/trading/grid-bot';
 
 export class GridBotVm {
-    constructor(private bot: GridBot) {
+    constructor(public bot: GridBot) {
 
     }
 

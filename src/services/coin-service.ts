@@ -3,6 +3,7 @@ import { Observable, Subject } from 'rxjs';
 import { BitvavoService } from 'src/bitvavo.service';
 import { loga, logr } from 'src/logr';
 import { Asset } from 'src/models/asset';
+import { Fee } from 'src/models/fee';
 import { Market } from 'src/models/market';
 import { OpenOrder } from 'src/models/open-order';
 import { TickerPrice } from 'src/models/ticker-price';
@@ -29,6 +30,8 @@ export class CoinService {
     private notificationsSubject = new Subject<void>();
     private openOrderFilledSubject = new Subject<string>();
 
+    public fee?: Fee;
+
     public get assets(): AssetDictionary {
         return this.assetsInternal;
     }
@@ -46,6 +49,7 @@ export class CoinService {
     }
 
     public async start(): Promise<void> {
+        await this.updateFees();
         await this.updateAssets();
         await this.updateBalance();
         this.intervalCounter = 0;
@@ -66,9 +70,7 @@ export class CoinService {
         tradePrice: number | undefined,
         tradeTriggerPrice: number | undefined
     ): Promise<PlaceOrderResponse> {
-        const result = this.bitvavoService.placeBuyOrder(asset.euroTradingPair, tradeAmount, tradePrice, tradeTriggerPrice);
-        console.log(result);
-        return result;
+        return this.bitvavoService.placeBuyOrder(asset.euroTradingPair, tradeAmount, tradePrice, tradeTriggerPrice);
     }
 
     public placeSellOrder(
@@ -81,6 +83,15 @@ export class CoinService {
             tradeAmount = asset.available; // sell all (that is not in order)
         }
         return this.bitvavoService.placeSellOrder(asset.euroTradingPair, tradeAmount, tradePrice, tradeTriggerPrice);
+    }
+
+    public cancelOrder(asset: Asset, orderId: string): Promise<void> {
+        return this.bitvavoService.cancelOrder(asset.euroMarket.marketName, orderId);
+    }
+
+    public async updateFees() {
+        const feeResponse = await this.bitvavoService.getFees();
+        this.fee = new Fee(feeResponse);
     }
 
     @loga()

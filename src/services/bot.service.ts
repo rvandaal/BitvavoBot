@@ -43,6 +43,29 @@ export class BotService {
     return gridBot;
   }
 
+  public async stopBot(bot: Bot): Promise<void> {
+    // 
+    // discussie of bot zelf zijn open orders moet bijhouden ipv de coinservice:
+    // coinservice moet dit toch doen, ook als er geen bots zijn
+    // de bot kan dus beter de coinservice aanroepen om een buy of sell order te plaatsen
+    //
+    if (bot) {
+      await bot.stop();
+
+      // clean administration
+      const listToDelete: string[] = [];
+      for (const key of Object.keys(this.botOrdersInternal)) {
+        const foundBot = this.botOrdersInternal[key];
+        if (foundBot === bot) {
+          listToDelete.push(key);
+        }
+      }
+      listToDelete.forEach(orderId => {
+        delete this.botOrdersInternal[orderId];
+      });
+    }
+  }
+
   @loga()
   public registerBotForOpenOrder(orderId: string, bot: Bot): void { // called by bot
       this.botOrdersInternal[orderId] = bot;

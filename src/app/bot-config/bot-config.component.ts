@@ -17,23 +17,23 @@ export class BotConfigComponent implements OnInit {
 
   formGroup: FormGroup;
 
-  gridBotVm?: GridBotVm;
+  gridBotVms: GridBotVm[] = [];
 
   constructor(private botService: BotService) {
     this.botTypes = ['grid'];
 
     this.formGroup = new FormGroup({
-      selectedAsset: new FormControl('ETH', Validators.required),
+      selectedAsset: new FormControl('ADA', Validators.required),
       selectedBotType: new FormControl('grid', Validators.required),
-      totalInvestment: new FormControl(null, [
+      totalInvestment: new FormControl(100, [
         Validators.required,
         Validators.pattern(/^[0-9]*$/)
       ]),
-      numberOfGridLines: new FormControl(null, [
+      numberOfGridLines: new FormControl(3, [
         Validators.required,
         Validators.pattern(/^[0-9]*[13579]$/)
       ]),
-      halfRange: new FormControl(null, [
+      halfRange: new FormControl(1, [
         Validators.pattern(/^[0-9]*$/)
       ]),
       minBoundaryRange: new FormControl(null, [
@@ -69,9 +69,15 @@ export class BotConfigComponent implements OnInit {
         };
         console.log(gridConfig);
         const gridBot = this.botService.startGridBot(gridConfig);
-        this.gridBotVm = new GridBotVm(gridBot);
+        this.gridBotVms.push(new GridBotVm(gridBot));
       }
     }
+  }
+
+  public async onStopBot(gridBotVm: GridBotVm) {
+    await this.botService.stopBot(gridBotVm.bot);
+    const index = this.gridBotVms.indexOf(gridBotVm);
+    this.gridBotVms.splice(index, 1);
   }
 
   public onReset() {

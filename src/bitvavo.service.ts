@@ -7,6 +7,7 @@ import { TradeResponse } from './response-models/trade-response';
 import { TickerPrice24hResponse } from './response-models/ticker-price-24h-response';
 import { PlaceOrderResponse } from './response-models/place-order-response';
 import { OpenOrderResponse } from './response-models/open-order-response';
+import { FeeResponse } from './response-models/fee-reponse';
 declare var require: any;
 const { bitvavo } = require('./bitvavo-api');
 
@@ -20,6 +21,11 @@ const { bitvavo } = require('./bitvavo-api');
 export class BitvavoService {
 
   constructor() { }
+
+  public async getFees(): Promise<FeeResponse> {
+    const response = await bitvavo.account();
+    return new FeeResponse(response);
+  }
 
   public async getAssets(): Promise<AssetResponse[]> {
     try {
@@ -108,6 +114,10 @@ export class BitvavoService {
     }
     console.log('amountRemaining: ', response.amountRemaining);
     return new PlaceOrderResponse(response);
+  }
+
+  public async cancelOrder(market: string, orderId: string): Promise<void> {
+    await bitvavo.cancelOrder(market, orderId);
   }
 
   public async getTrades(asset: Asset): Promise<TradeResponse[]> {
