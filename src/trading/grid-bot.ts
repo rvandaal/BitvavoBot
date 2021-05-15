@@ -2,11 +2,12 @@ import { loga, logr } from 'src/logr';
 import { Asset } from 'src/models/asset';
 import { Trade } from 'src/models/trade';
 import { PlaceOrderResponse } from 'src/response-models/place-order-response';
+import { BotService } from 'src/services/bot.service';
 import { CoinService } from 'src/services/coin-service';
-import { CoinBot } from './coin-bot';
+import { Bot } from './bot';
 import { IGridConfig } from './i-grid-config';
 
-export class GridCoinBot extends CoinBot {
+export class GridBot extends Bot {
 
     private isActive = false;
     private gridLines: number[] = [];
@@ -30,7 +31,7 @@ export class GridCoinBot extends CoinBot {
     private currentValueInAlt = 0;
     private currentCashInEuro = 0;
 
-    constructor(private config: IGridConfig, private coinService: CoinService) {
+    constructor(private config: IGridConfig, private botService: BotService, private coinService: CoinService) {
         super(config.asset);
     }
 
@@ -86,7 +87,7 @@ export class GridCoinBot extends CoinBot {
         const currentPrice = this.currentPrice;
         this.startPrice = currentPrice;
 
-        if (halfRange) {
+        if (this.config.useHalfRange && halfRange) {
             // ignore min and max boundaries from config
             this.minBoundary = currentPrice - halfRange;
             this.maxBoundary = currentPrice + halfRange;
@@ -121,8 +122,6 @@ export class GridCoinBot extends CoinBot {
         // grid lines are now known; place orders
 
         await this.placeInitialOrders();
-
-        this.coinService.registerBotForTradeUpdates(this);
     }
 
     @loga()
@@ -246,7 +245,7 @@ export class GridCoinBot extends CoinBot {
         console.log('place buy order, amount: ' + amount + ', price: ' + price);
         const response = await this.coinService.placeBuyOrder(this.config.asset, amount, price, undefined);
         this.placeOrderResponses.push(response);
-        this.coinService.registerBotForOpenOrder(response.orderId, this);
+        this.botService.registerBotForOpenOrder(response.orderId, this);
     }
 
     private async placeSellOrder(amount: number, price: number): Promise<void> {
@@ -254,6 +253,6 @@ export class GridCoinBot extends CoinBot {
         console.log('place sell order, amount: ' + amount + ', price: ' + price);
         const response = await this.coinService.placeSellOrder(this.config.asset, amount, price, undefined);
         this.placeOrderResponses.push(response);
-        this.coinService.registerBotForOpenOrder(response.orderId, this);
+        this.botService.registerBotForOpenOrder(response.orderId, this);
     }
 }

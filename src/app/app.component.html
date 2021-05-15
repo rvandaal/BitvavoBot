@@ -1,6 +1,6 @@
 <nav>
-  <ul ngbNav #nav="ngbNav" class="nav-tabs">
-    <li ngbNavItem>
+  <ul ngbNav #nav="ngbNav" class="nav-tabs" [activeId]="2">
+    <li [ngbNavItem]="0">
       <a ngbNavLink>Balans</a>
       <ng-template ngbNavContent>
         <div class="d-flex flex-column">
@@ -103,7 +103,7 @@
         </div>
       </ng-template>
     </li>
-    <li ngbNavItem>
+    <li [ngbNavItem]="1">
       <a ngbNavLink>Open orders</a>
       <ng-template ngbNavContent>
         <div class="d-flex flex-column">
@@ -224,12 +224,12 @@
         </div>
       </ng-template>
     </li>
-    <li ngbNavItem>
+    <li [ngbNavItem]="2">
       <a ngbNavLink>Bots</a>
       <ng-template ngbNavContent>
-        <app-bot-config class="d-flex flex-column"></app-bot-config>
+        <app-bot-config style="height:100%"></app-bot-config>
       </ng-template>
     </li>
   </ul>
-  <div [ngbNavOutlet]="nav"></div>
+  <div class="tab-content" [ngbNavOutlet]="nav"></div>
 </nav>

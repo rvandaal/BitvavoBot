@@ -1,4 +1,3 @@
-import { stringify } from '@angular/compiler/src/util';
 import { Injectable } from '@angular/core';
 import { Observable, Subject } from 'rxjs';
 import { BitvavoService } from 'src/bitvavo.service';
@@ -10,12 +9,9 @@ import { TickerPrice } from 'src/models/ticker-price';
 import { TickerPrice24h } from 'src/models/ticker-price-24h';
 import { Trade } from 'src/models/trade';
 import { PlaceOrderResponse } from 'src/response-models/place-order-response';
-import { CoinBot } from 'src/trading/coin-bot';
-import { GridCoinBot } from 'src/trading/grid-coin-bot';
-import { IGridConfig } from 'src/trading/i-grid-config';
 
 export type AssetDictionary = Record<string, Asset>;
-export type BotOrderDictionary = Record<string, CoinBot>;
+
 
 // This class is responsible for converting response models into domain models.
 // It holds all relevant information that is not view specific and could be persisted.
@@ -29,10 +25,9 @@ export class CoinService {
     private intervalCounter = 0;
     private intervalId: NodeJS.Timeout | undefined;
     private assetsInternal: AssetDictionary;
-    private botOrdersInternal: BotOrderDictionary;
-    private activeBots: CoinBot[] = [];
 
     private notificationsSubject = new Subject<void>();
+    private openOrderFilledSubject = new Subject<string>();
 
     public get assets(): AssetDictionary {
         return this.assetsInternal;
@@ -42,9 +37,12 @@ export class CoinService {
         return this.notificationsSubject.asObservable();
     }
 
+    public get openOrderFilled$(): Observable<string> {
+        return this.openOrderFilledSubject.asObservable();
+    }
+
     constructor(private bitvavoService: BitvavoService) {
         this.assetsInternal = {};
-        this.botOrdersInternal = {};
     }
 
     public start(): void {
@@ -56,12 +54,6 @@ export class CoinService {
                 this.performPeriodicTasks();
             }, this.smallestInterval);
         })();
-    }
-
-    public registerBotForTradeUpdates(bot: CoinBot): void {
-        if (!this.activeBots.includes(bot)) {
-            this.activeBots.push(bot);
-        }
     }
 
     public stop(): void {
@@ -127,11 +119,6 @@ export class CoinService {
         for (let j = listToDelete.length - 1; j >= 0; j--) {
             asset.trades.splice(listToDelete[j], 1);
         }
-    }
-
-    @loga()
-    public registerBotForOpenOrder(orderId: string, bot: CoinBot): void { // called by bot
-        this.botOrdersInternal[orderId] = bot;
     }
 
     private performPeriodicTasks(): void {
@@ -224,21 +211,11 @@ export class CoinService {
             openOrders.forEach(async (openOrder, index) => {
                 const openOrderResponse = openOrderResponses.find(o => o.orderId === openOrder.orderId);
                 if (!openOrderResponse) {
-                    // Open order is removed so it is filled
-                    // Is there a bot waiting to update?
-                    const bot = this.botOrdersInternal[openOrder.orderId];
-                    if (bot) {
-                        // Order is filled and there is a bot waiting for it.
-                        // bot.processFilledOrder(openOrder.orderId);
-                        // First get trades up to date
-                        if (first) {
-                            await this.updateTrades(asset); // needed only once per asset
-                            first = false;
-                        }
-                        const tradesWhichFilledTheOrder = asset.trades.filter(t => t.orderId === openOrder.orderId);
-                        bot.processFilledOrder(openOrder.orderId, tradesWhichFilledTheOrder);
+                    if (first) {
+                        await this.updateTrades(asset); // needed only once per asset
+                        first = false;
                     }
-                    delete this.botOrdersInternal[openOrder.orderId];
+                    this.openOrderFilledSubject.next(openOrder.orderId);
                     listToDelete.push(index);
                 }
             });

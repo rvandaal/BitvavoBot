@@ -2,7 +2,9 @@ import { Component, OnInit } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { Asset } from 'src/models/asset';
 import { BotService, BotType } from 'src/services/bot.service';
+import { GridBot } from 'src/trading/grid-bot';
 import { IGridConfig } from 'src/trading/i-grid-config';
+import { GridBotVm } from 'src/view-models/grid-bot-vm';
 
 @Component({
   selector: 'app-bot-config',
@@ -14,6 +16,8 @@ export class BotConfigComponent implements OnInit {
   botTypes: BotType[];
 
   formGroup: FormGroup;
+
+  gridBotVm?: GridBotVm;
 
   constructor(private botService: BotService) {
     this.botTypes = ['grid'];
@@ -27,7 +31,7 @@ export class BotConfigComponent implements OnInit {
       ]),
       numberOfGridLines: new FormControl(null, [
         Validators.required,
-        Validators.pattern(/^[0-9]*$/)
+        Validators.pattern(/^[0-9]*[13579]$/)
       ]),
       halfRange: new FormControl(null, [
         Validators.pattern(/^[0-9]*$/)
@@ -64,9 +68,10 @@ export class BotConfigComponent implements OnInit {
           maxBoundary: this.formGroup.value['maxBoundaryRange'],
         };
         console.log(gridConfig);
+        const gridBot = this.botService.startGridBot(gridConfig);
+        this.gridBotVm = new GridBotVm(gridBot);
       }
     }
-    
   }
 
   public onReset() {

@@ -1,13 +1,11 @@
-<div class="d-flex flex-column">
-  <div class="d-flex flex-row align-items-center" style="margin: 25px 0 5px 25px">
+<div fxLayout="column" style="height: 100%" fxFlex>
+  <div style="margin: 25px 0 5px 25px" fxFlex="nogrow">
     <!-- <span style="margin-left: 50px">Meerdere rijdetails tegelijk open</span> -->
     <!-- <ng-toggle onText="ja" offText="nee" [size]="'sm'" class="ml-3" [(ngModel)]="moreRowDetailsAtOnceInOpenOrders"></ng-toggle> -->
     
   </div> 
-  <div fxLayout="column" style="margin: 25px">
-    
-
-    <form [formGroup]="formGroup" (validSubmit)="onStartBot()">
+  <div fxLayout="row" fxLayoutAlign="stretch" fxLayoutGap="20px" style="margin: 25px;" fxFlex="grow">
+    <form [formGroup]="formGroup" (validSubmit)="onStartBot()" fxFlex="nogrow">
       <div class="form-group">
         <label class="control-label">Munt</label>
         <ng-select formControlName="selectedAsset" [searchable]="true" [items]="assets" bindLabel="name" bindValue="symbol" placeholder="Select asset">
@@ -60,5 +58,8 @@
       </div>
     </form>
 
+    <div style="background: red" fxFlex="grow">
+      <!-- <pre>{{gridBotVm.profitFromBot}}</pre> -->
+    </div>
   </div>
 </div>

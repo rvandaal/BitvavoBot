@@ -4,7 +4,7 @@ import { AssetVm } from 'src/view-models/asset-vm';
 import { Trade } from 'src/models/trade';
 import { MarketVm } from 'src/view-models/market-vm';
 import { IGridConfig } from 'src/trading/i-grid-config';
-import { GridCoinBot } from 'src/trading/grid-coin-bot';
+import { GridBot } from 'src/trading/grid-bot';
 
 @Component({
   selector: 'app-root',
@@ -55,21 +55,6 @@ export class AppComponent {
     //   }
     // })
     this.coinService.start();
-  }
-
-  public onStartGridBotClick(): void {
-    const ethAsset = this.coinService.assets['ETH'];
-    const config: IGridConfig = {
-        asset: ethAsset,
-        numberOfGridLines: 31, // has to be odd
-        halfRange: 60,
-        totalInvestmentInEuro: 180
-    };
-    if (config.numberOfGridLines % 2 === 0) {
-      alert('number of gridlines must be odd');
-    }
-    const gridBot = new GridCoinBot(config, this.coinService);
-    gridBot.start();
   }
 
   public get openOrderMarkets(): MarketVm[] {

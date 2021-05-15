@@ -4,7 +4,7 @@
 import { Asset } from 'src/models/asset';
 import { Trade } from 'src/models/trade';
 
-export class CoinBot {
+export class Bot {
     // private positions: Position[];
     // private config: BotConfig
     // private market: string;

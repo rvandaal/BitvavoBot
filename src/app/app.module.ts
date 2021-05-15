@@ -11,6 +11,7 @@ import { BotService } from 'src/services/bot.service';
 import { CoinService } from 'src/services/coin-service';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { BotConfigComponent } from './bot-config/bot-config.component';
+import { FlexLayoutModule } from '@angular/flex-layout';
 
 import { NgBootstrapFormValidationModule } from 'ng-bootstrap-form-validation';
 
@@ -25,6 +26,7 @@ import { NgBootstrapFormValidationModule } from 'ng-bootstrap-form-validation';
     NgbModule,
     NgToggleModule,
     NgSelectModule,
+    FlexLayoutModule,
     FormsModule,
     ReactiveFormsModule,
     NgBootstrapFormValidationModule.forRoot(),
