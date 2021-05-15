@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component } from '@angular/core';
+import { ChangeDetectorRef, Component, InjectionToken } from '@angular/core';
 import { CoinService } from 'src/services/coin-service';
 import { AssetVm } from 'src/view-models/asset-vm';
 import { Trade } from 'src/models/trade';
@@ -26,6 +26,8 @@ export class AppComponent {
   public tradeAmountRaw: string | undefined;
   public tradePrice: string | undefined;
   public tradeTriggerPrice: string | undefined;
+
+  // interfaces injecteren: https://stackoverflow.com/questions/53317225/angular-injectiontoken-throws-no-provider-for-injectiontoken
 
   title = 'BitvavoBot';
 

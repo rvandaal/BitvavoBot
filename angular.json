@@ -33,6 +33,7 @@
             "styles": [
               "src/styles.scss",
               "./node_modules/bootstrap/dist/css/bootstrap.css",
+              "@ng-select/ng-select/themes/default.theme.css",
               "./src/assets/icn.css"
             ],
             "scripts": []

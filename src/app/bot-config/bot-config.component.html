@@ -1,0 +1,64 @@
+<div class="d-flex flex-column">
+  <div class="d-flex flex-row align-items-center" style="margin: 25px 0 5px 25px">
+    <!-- <span style="margin-left: 50px">Meerdere rijdetails tegelijk open</span> -->
+    <!-- <ng-toggle onText="ja" offText="nee" [size]="'sm'" class="ml-3" [(ngModel)]="moreRowDetailsAtOnceInOpenOrders"></ng-toggle> -->
+    
+  </div> 
+  <div fxLayout="column" style="margin: 25px">
+    
+
+    <form [formGroup]="formGroup" (validSubmit)="onStartBot()">
+      <div class="form-group">
+        <label class="control-label">Munt</label>
+        <ng-select formControlName="selectedAsset" [searchable]="true" [items]="assets" bindLabel="name" bindValue="symbol" placeholder="Select asset">
+        </ng-select>
+      </div>
+      <div class="form-group">
+        <label class="control-label">Bot type</label>
+        <ng-select formControlName="selectedBotType" [searchable]="true" [items]="botTypes" placeholder="Select bot type">
+        </ng-select>
+      </div>
+      <div class="form-group">
+        <label class="control-label">Totale investering</label>
+        <input type="text" class="form-control" formControlName="totalInvestment">
+      </div>
+      <div class="form-group">
+        <label class="control-label">Aantal gridlijnen</label>
+        <input type="text" class="form-control" formControlName="numberOfGridLines">
+      </div>
+
+      <div class="radio mb-4 mt-4">
+        <div>
+          <label>
+            <input type="radio" [value]="true" formControlName="useHalfRange">
+            Use half range
+          </label>
+        </div>
+        <div>
+          <label>
+            <input type="radio" [value]="false" formControlName="useHalfRange">
+            Use min and max boundaries
+          </label>
+        </div>
+      </div>
+      <div class="form-group" *ngIf="formGroup.value['useHalfRange']">
+        <label class="control-label">Halve range</label>
+        <input type="text" class="form-control" formControlName="halfRange">
+      </div>
+      <div class="form-group" *ngIf="!formGroup.value['useHalfRange']">
+        <label class="control-label">Minimale prijs</label>
+        <input type="text" class="form-control" formControlName="minBoundaryRange">
+      </div>
+      <div class="form-group" *ngIf="!formGroup.value['useHalfRange']">
+        <label class="control-label">Maximale prijs</label>
+        <input type="text" class="form-control" formControlName="maxBoundaryRange">
+      </div>
+
+      <div class="mt-4">
+        <button class="btn btn-default" type="button" (click)="onReset()">Reset</button>
+        <button class="btn btn-primary pull-right" type="submit">Start bot</button>
+      </div>
+    </form>
+
+  </div>
+</div>

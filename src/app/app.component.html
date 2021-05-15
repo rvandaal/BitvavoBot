@@ -224,6 +224,12 @@
         </div>
       </ng-template>
     </li>
+    <li ngbNavItem>
+      <a ngbNavLink>Bots</a>
+      <ng-template ngbNavContent>
+        <app-bot-config class="d-flex flex-column"></app-bot-config>
+      </ng-template>
+    </li>
   </ul>
   <div [ngbNavOutlet]="nav"></div>
 </nav>

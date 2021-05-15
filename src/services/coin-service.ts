@@ -14,14 +14,12 @@ import { CoinBot } from 'src/trading/coin-bot';
 import { GridCoinBot } from 'src/trading/grid-coin-bot';
 import { IGridConfig } from 'src/trading/i-grid-config';
 
-// This class is responsible for converting response models into domain models.
-// It holds all relevant information that is not view specific and could be persisted.
-// It contains the timer with which the current price is retrieved and exposes observables towards the views.
-
-
 export type AssetDictionary = Record<string, Asset>;
 export type BotOrderDictionary = Record<string, CoinBot>;
 
+// This class is responsible for converting response models into domain models.
+// It holds all relevant information that is not view specific and could be persisted.
+// It contains the timer with which the current price is retrieved and exposes observables towards the views.
 
 @Injectable({
     providedIn: 'root'
