@@ -45,15 +45,13 @@ export class CoinService {
         this.assetsInternal = {};
     }
 
-    public start(): void {
-        (async () => {
-            await this.updateAssets();
-            await this.updateBalance();
-            this.intervalCounter = 0;
-            this.intervalId = setInterval(() => {
-                this.performPeriodicTasks();
-            }, this.smallestInterval);
-        })();
+    public async start(): Promise<void> {
+        await this.updateAssets();
+        await this.updateBalance();
+        this.intervalCounter = 0;
+        this.intervalId = setInterval(() => {
+            this.performPeriodicTasks();
+        }, this.smallestInterval);
     }
 
     public stop(): void {

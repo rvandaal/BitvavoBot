@@ -5,7 +5,7 @@
     
   </div> 
   <div fxLayout="row" fxLayoutAlign="stretch" fxLayoutGap="20px" style="margin: 25px;" fxFlex="grow">
-    <form [formGroup]="formGroup" (validSubmit)="onStartBot()" fxFlex="nogrow">
+    <form [formGroup]="formGroup" (submit)="onStartBot()" fxFlex="nogrow">
       <div class="form-group">
         <label class="control-label">Munt</label>
         <ng-select formControlName="selectedAsset" [searchable]="true" [items]="assets" bindLabel="name" bindValue="symbol" placeholder="Select asset">
@@ -26,7 +26,7 @@
           <div class="input-group-prepend">
             <span class="input-group-text">$</span>
           </div>
-          <input type="text" class="form-control" forControlName="totalInvestment">
+          <input type="text" class="form-control" formControlName="totalInvestment">
         </div>
       </div>
 
@@ -51,7 +51,7 @@
           <div class="input-group-prepend">
             <span class="input-group-text">$</span>
           </div>
-          <input type="text" class="form-control" forControlName="halfRange">
+          <input type="text" class="form-control" formControlName="halfRange">
           <!-- <div class="input-group-append">
             <span class="input-group-text">.00</span>
           </div> -->
@@ -63,7 +63,7 @@
           <div class="input-group-prepend">
             <span class="input-group-text">$</span>
           </div>
-          <input type="text" class="form-control" forControlName="minBoundaryRange">
+          <input type="text" class="form-control" formControlName="minBoundaryRange">
         </div>
       </div>
       <div class="form-group" *ngIf="!formGroup.value['useHalfRange']">
@@ -72,7 +72,7 @@
           <div class="input-group-prepend">
             <span class="input-group-text">$</span>
           </div>
-          <input type="text" class="form-control" forControlName="maxBoundaryRange">
+          <input type="text" class="form-control" formControlName="maxBoundaryRange">
         </div>
       </div>
 
@@ -82,8 +82,8 @@
       </div>
     </form>
 
-    <div style="background: red" fxFlex="grow">
-      <!-- <pre>{{gridBotVm.profitFromBot}}</pre> -->
+    <div fxFlex="grow" *ngIf="gridBotVm">
+      <pre>{{gridBotVm.profitFromBot}}</pre>
     </div>
   </div>
 </div>

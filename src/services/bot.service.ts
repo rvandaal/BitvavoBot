@@ -15,12 +15,14 @@ export type BotOrderDictionary = Record<string, Bot>;
 })
 export class BotService {
 
-  public assets: Asset[];
+  public assets: Asset[] = [];
   private botOrdersInternal: BotOrderDictionary = {};
 
   constructor(private coinService: CoinService) {
     // Assumption: coin service has been started
-    this.assets = Object.keys(this.coinService.assets).map(k => this.coinService.assets[k]);
+    this.coinService.start().then(() => {
+      this.assets = Object.keys(this.coinService.assets).map(k => this.coinService.assets[k]);
+    });
 
     this.coinService.openOrderFilled$.subscribe({next: orderId => {
       const bot = this.botOrdersInternal[orderId];

@@ -54,7 +54,7 @@ export class BotConfigComponent implements OnInit {
     return this.botService.assets;
   }
 
-  public onStartBot() {
+  public onStartBot(): void {
     const asset = this.botService.assets.find(a => a.symbol === this.formGroup.value['selectedAsset']);
     if (asset) {
       if (this.formGroup.value['selectedBotType'] === 'grid'){

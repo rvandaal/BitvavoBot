@@ -54,7 +54,7 @@ export class AppComponent {
     //     this.syncOpenOrders(openOrders);
     //   }
     // })
-    this.coinService.start();
+    // this.coinService.start();
   }
 
   public get openOrderMarkets(): MarketVm[] {
