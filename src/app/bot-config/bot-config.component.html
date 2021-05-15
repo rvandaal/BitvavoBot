@@ -1,89 +1,97 @@
-<div fxLayout="column" style="height: 100%" fxFlex>
-  <div style="margin: 25px 0 5px 25px" fxFlex="nogrow">
-    <!-- <span style="margin-left: 50px">Meerdere rijdetails tegelijk open</span> -->
-    <!-- <ng-toggle onText="ja" offText="nee" [size]="'sm'" class="ml-3" [(ngModel)]="moreRowDetailsAtOnceInOpenOrders"></ng-toggle> -->
-    
-  </div> 
+<div fxLayout="column" class="bot-config-grid" style="height: 100%" fxFlex>
   <div fxLayout="row" fxLayoutAlign="stretch" fxLayoutGap="20px" style="margin: 25px;" fxFlex="grow">
-    <form [formGroup]="formGroup" (submit)="onStartBot()" fxFlex="nogrow">
-      <div class="form-group">
-        <label class="control-label">Munt</label>
-        <ng-select formControlName="selectedAsset" [searchable]="true" [items]="assets" bindLabel="name" bindValue="symbol" placeholder="Select asset">
-        </ng-select>
-      </div>
-      <div class="form-group">
-        <label class="control-label">Bot type</label>
-        <ng-select formControlName="selectedBotType" [searchable]="true" [items]="botTypes" placeholder="Select bot type">
-        </ng-select>
-      </div>
-      <div class="form-group">
-        <label class="control-label">Aantal gridlijnen</label>
-        <input type="text" class="form-control" formControlName="numberOfGridLines">
-      </div>
-      <div class="form-group">
-        <label class="control-label">Totale investering</label>
-        <div class="input-group mb-3">
-          <div class="input-group-prepend">
-            <span class="input-group-text">$</span>
-          </div>
-          <input type="text" class="form-control" formControlName="totalInvestment">
+    <div class="card">
+      <h5 class="card-title">Bot settings</h5>
+      <form [formGroup]="formGroup" (submit)="onStartBot()" fxFlex="nogrow" class="card-body">
+        <div class="form-group">
+          <label class="control-label">Munt</label>
+          <ng-select formControlName="selectedAsset" [searchable]="true" [items]="assets" bindLabel="name" bindValue="symbol" placeholder="Select asset">
+          </ng-select>
         </div>
-      </div>
+        <div class="form-group">
+          <label class="control-label">Bot type</label>
+          <ng-select formControlName="selectedBotType" [searchable]="true" [items]="botTypes" placeholder="Select bot type">
+          </ng-select>
+        </div>
+        <div class="form-group">
+          <label class="control-label">Aantal gridlijnen</label>
+          <input type="text" class="form-control" formControlName="numberOfGridLines">
+        </div>
+        <div class="form-group">
+          <label class="control-label">Totale investering</label>
+          <div class="input-group mb-3">
+            <div class="input-group-prepend">
+              <span class="input-group-text">$</span>
+            </div>
+            <input type="text" class="form-control" formControlName="totalInvestment">
+          </div>
+        </div>
 
-      <div class="radio mb-4 mt-4">
-        <div>
-          <label>
-            <input type="radio" [value]="true" formControlName="useHalfRange">
-            Use half range
-          </label>
-        </div>
-        <div>
-          <label>
-            <input type="radio" [value]="false" formControlName="useHalfRange">
-            Use min and max boundaries
-          </label>
-        </div>
-      </div>
-      <div class="form-group" *ngIf="formGroup.value['useHalfRange']">
-        <label class="control-label">Halve range</label>
-        <!-- <input type="text" class="form-control" formControlName="halfRange"> -->
-        <div class="input-group mb-3">
-          <div class="input-group-prepend">
-            <span class="input-group-text">$</span>
+        <div class="radio mb-4 mt-4">
+          <div>
+            <label>
+              <input type="radio" [value]="true" formControlName="useHalfRange">
+              Use half range
+            </label>
           </div>
-          <input type="text" class="form-control" formControlName="halfRange">
-          <!-- <div class="input-group-append">
-            <span class="input-group-text">.00</span>
-          </div> -->
-        </div>
-      </div>
-      <div class="form-group" *ngIf="!formGroup.value['useHalfRange']">
-        <label class="control-label">Minimale prijs</label>
-        <div class="input-group mb-3">
-          <div class="input-group-prepend">
-            <span class="input-group-text">$</span>
+          <div>
+            <label>
+              <input type="radio" [value]="false" formControlName="useHalfRange">
+              Use min and max boundaries
+            </label>
           </div>
-          <input type="text" class="form-control" formControlName="minBoundaryRange">
         </div>
-      </div>
-      <div class="form-group" *ngIf="!formGroup.value['useHalfRange']">
-        <label class="control-label">Maximale prijs</label>
-        <div class="input-group mb-3">
-          <div class="input-group-prepend">
-            <span class="input-group-text">$</span>
+        <div class="form-group" *ngIf="formGroup.value['useHalfRange']">
+          <label class="control-label">Halve range</label>
+          <!-- <input type="text" class="form-control" formControlName="halfRange"> -->
+          <div class="input-group mb-3">
+            <div class="input-group-prepend">
+              <span class="input-group-text">$</span>
+            </div>
+            <input type="text" class="form-control" formControlName="halfRange">
+            <!-- <div class="input-group-append">
+              <span class="input-group-text">.00</span>
+            </div> -->
           </div>
-          <input type="text" class="form-control" formControlName="maxBoundaryRange">
         </div>
-      </div>
+        <div class="form-group" *ngIf="!formGroup.value['useHalfRange']">
+          <label class="control-label">Minimale prijs</label>
+          <div class="input-group mb-3">
+            <div class="input-group-prepend">
+              <span class="input-group-text">$</span>
+            </div>
+            <input type="text" class="form-control" formControlName="minBoundaryRange">
+          </div>
+        </div>
+        <div class="form-group" *ngIf="!formGroup.value['useHalfRange']">
+          <label class="control-label">Maximale prijs</label>
+          <div class="input-group mb-3">
+            <div class="input-group-prepend">
+              <span class="input-group-text">$</span>
+            </div>
+            <input type="text" class="form-control" formControlName="maxBoundaryRange">
+          </div>
+        </div>
 
-      <div class="mt-4">
-        <button class="btn btn-default" type="button" (click)="onReset()">Reset</button>
-        <button class="btn btn-primary pull-right" type="submit">Start bot</button>
-      </div>
-    </form>
+        <div class="mt-4">
+          <button class="btn btn-default" type="button" (click)="onReset()">Reset</button>
+          <button class="btn btn-primary pull-right" type="submit">Start bot</button>
+        </div>
+      </form>
+    </div>
 
-    <div fxFlex="grow" *ngIf="gridBotVm">
-      <pre>{{gridBotVm.profitFromBot}}</pre>
+    <div fxFlex="grow">
+      <!-- <pre>{{gridBotVm.profitFromBot}}</pre> -->
+      <div class="card">
+        <div class="card-header">
+          <h5 style="margin-top: 9px">Actieve bots</h5>
+        </div>
+        <ul class="list-group list-group-flush">
+          <li class="list-group-item">Cras justo odio</li>
+          <li class="list-group-item">Dapibus ac facilisis in</li>
+          <li class="list-group-item">Vestibulum at eros</li>
+        </ul>
+      </div>
     </div>
   </div>
 </div>
