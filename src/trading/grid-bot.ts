@@ -14,26 +14,33 @@ export class GridBot extends Bot {
     private currentHiddenGridLine = 0;
     private minBoundary = 0;
     private maxBoundary = 0;
+    private estimatedInitialInvestmentInEuro = 0;
+    private estimatedInitialInvestmentInAlt = 0;
 
     private placeOrderResponses: PlaceOrderResponse[] = [];
 
     public tradeAmountInAltPerGridLine = 0;
     public numberOfBuyOrdersFilled = 0;
     public numberOfSellOrdersFilled = 0;
-    public startPrice = 0;
-    public initialInvestmentInEuro = 0;
-    public estimatedInitialInvestmentInAlt = 0;
     public initialInvestmentInAlt = 0;
+    public initialInvestmentInEuro = 0;
     public initialInvestmentPrice = 0;
     public initialFee = 0;
-    public startValueInEuro = 0;
     public gridLineDistance = 0;
     public currentValueInAlt = 0;
     public currentCashInEuro = 0;
-    
+    public feePaid = 0;
 
     constructor(private config: IGridConfig, private botService: BotService, private coinService: CoinService) {
         super(config.asset);
+    }
+
+    public get numberOfGridLines(): number {
+        return this.config.numberOfGridLines;
+    }
+
+    public get totalInvestmentInEuro(): number {
+        return this.config.totalInvestmentInEuro;
     }
 
     public get currentPrice(): number {
@@ -45,12 +52,11 @@ export class GridBot extends Bot {
     }
 
     public get profitWithoutBot(): number {
-        return this.estimatedInitialInvestmentInAlt * (this.currentPrice - this.startPrice) - this.initialFee;
+        return this.estimatedInitialInvestmentInAlt * (this.currentPrice - this.initialInvestmentPrice) - this.initialFee;
     }
 
     public get profitWithBot(): number {
-        // return this.currentValueInEuro - this.startValueInEuro;
-        return this.currentValueInAlt * this.currentPrice + this.currentCashInEuro - this.startValueInEuro;
+        return this.currentValueInAlt * this.currentPrice + this.currentCashInEuro - this.initialInvestmentInEuro;
     }
 
     public get profitFromBot(): number {
@@ -77,12 +83,12 @@ export class GridBot extends Bot {
             return;
         }
         const currentPrice = this.currentPrice;
-        this.startPrice = currentPrice;
 
         if (this.config.useHalfRange && halfRange) {
             // ignore min and max boundaries from config
             this.minBoundary = Math.max(currentPrice - halfRange, 0.0001);
-            this.maxBoundary = currentPrice + halfRange; // todo: checken: als de prijs heel hoog is, kan het zijn dat je insufficient balance krijgt
+            // todo: checken: als de prijs heel hoog is, kan het zijn dat je insufficient balance krijgt
+            this.maxBoundary = currentPrice + halfRange;
         }
         if (this.minBoundary === 0 || this.maxBoundary === 0) {
             return;
@@ -98,23 +104,22 @@ export class GridBot extends Bot {
 
         this.currentHiddenGridLine = this.getGridLineClosestToCurrentPrice();
 
-
-        //this.initialFee = fee.maker * amount * price;
-
         // totale initiele kosten in euros: initialAmountAlt * initialPrice * (1 + fee)
 
         // initial investment. If all sell orders are filled, no buy orders, we should have 0 euro.
-        this.initialInvestmentInEuro = this.config.totalInvestmentInEuro / 2;
-        this.estimatedInitialInvestmentInAlt = this.initialInvestmentInEuro / this.currentPrice;
-        this.tradeAmountInAltPerGridLine = this.estimatedInitialInvestmentInAlt / ((this.config.numberOfGridLines - 1) / 2);
+        this.estimatedInitialInvestmentInEuro = this.config.totalInvestmentInEuro / 2;
+        this.estimatedInitialInvestmentInAlt = this.estimatedInitialInvestmentInEuro / this.currentPrice;
+
         console.log(`START bot, initial investment in alt: ${this.estimatedInitialInvestmentInAlt}, price: ${this.currentPrice}`);
 
         const placeOrderResponse = await this.placeInitialBuyOrder(this.estimatedInitialInvestmentInAlt);
 
+        this.tradeAmountInAltPerGridLine = this.initialInvestmentInAlt / ((this.config.numberOfGridLines - 1) / 2);
+
         console.log('initial investment: ', this.estimatedInitialInvestmentInAlt, ' coins against price: ', this.initialInvestmentPrice);
 
         await this.coinService.updateBalance();
-        this.startValueInEuro = this.estimatedInitialInvestmentInAlt * this.initialInvestmentPrice - this.initialFee;
+        this.initialInvestmentInEuro = this.initialInvestmentInAlt * this.initialInvestmentPrice - this.initialFee;
 
         // grid lines are now known; place orders
 

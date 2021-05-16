@@ -27,20 +27,20 @@ export class BotConfigComponent implements OnInit {
       selectedBotType: new FormControl('grid', Validators.required),
       totalInvestment: new FormControl(100, [
         Validators.required,
-        Validators.pattern(/^[0-9]*$/)
+        Validators.pattern(/^[0-9\.]*$/)
       ]),
       numberOfGridLines: new FormControl(3, [
         Validators.required,
-        Validators.pattern(/^[0-9]*[13579]$/)
+        Validators.pattern(/^[0-9\.]*[13579]$/)
       ]),
-      halfRange: new FormControl(1, [
-        Validators.pattern(/^[0-9]*$/)
+      halfRange: new FormControl(0.01, [
+        Validators.pattern(/^[0-9\.]*$/)
       ]),
       minBoundaryRange: new FormControl(null, [
-        Validators.pattern(/^[0-9]*$/)
+        Validators.pattern(/^[0-9\.]*$/)
       ]),
       maxBoundaryRange: new FormControl(null, [
-        Validators.pattern(/^[0-9]*$/)
+        Validators.pattern(/^[0-9\.]*$/)
       ]),
       useHalfRange: new FormControl(true)
     });
@@ -61,11 +61,11 @@ export class BotConfigComponent implements OnInit {
         const gridConfig: IGridConfig = {
           asset,
           numberOfGridLines: this.formGroup.value['numberOfGridLines'],
-          totalInvestmentInEuro: this.formGroup.value['totalInvestment'],
+          totalInvestmentInEuro: +this.formGroup.value['totalInvestment'],
           useHalfRange: this.formGroup.value['useHalfRange'],
-          halfRange: this.formGroup.value['halfRange'],
-          minBoundary: this.formGroup.value['minBoundaryRange'],
-          maxBoundary: this.formGroup.value['maxBoundaryRange'],
+          halfRange: +this.formGroup.value['halfRange'],
+          minBoundary: +this.formGroup.value['minBoundaryRange'],
+          maxBoundary: +this.formGroup.value['maxBoundaryRange'],
         };
         console.log(gridConfig);
         const gridBot = this.botService.startGridBot(gridConfig);
