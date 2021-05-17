@@ -10,6 +10,7 @@ export class Asset {
 
     public readonly symbol: string; // should be uppercase
     public readonly name: string;
+    public readonly decimals: number;
     public available: number;
     public inOrder: number;
     public investment: number;
@@ -20,9 +21,10 @@ export class Asset {
     public numberOfSubsequentIncreasements: number;
     public euroMarket: Market;
 
-    constructor(symbol: string, name: string) {
+    constructor(symbol: string, name: string, decimals: number) {
         this.symbol = symbol;
         this.name = name;
+        this.decimals = decimals;
         this.available = 0;
         this.inOrder = 0;
         this.investment = 0;

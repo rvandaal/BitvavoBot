@@ -77,18 +77,20 @@ export class BitvavoService {
     market: string,
     tradeAmount: number,
     tradePrice: number | undefined,
-    tradeTriggerPrice: number | undefined
+    tradeTriggerPrice: number | undefined,
+    decimals: number
   ): Promise<PlaceOrderResponse> {
-    return this.placeOrder(market, true, tradeAmount, tradePrice, tradeTriggerPrice);
+    return this.placeOrder(market, true, tradeAmount, tradePrice, tradeTriggerPrice, decimals);
   }
 
   public async placeSellOrder(
     market: string,
     tradeAmount: number,
     tradePrice: number | undefined,
-    tradeTriggerPrice: number | undefined
+    tradeTriggerPrice: number | undefined,
+    decimals: number
   ): Promise<PlaceOrderResponse> {
-    return this.placeOrder(market, false, tradeAmount, tradePrice, tradeTriggerPrice);
+    return this.placeOrder(market, false, tradeAmount, tradePrice, tradeTriggerPrice, decimals);
   }
 
   public async placeOrder(
@@ -96,28 +98,43 @@ export class BitvavoService {
     isBuy: boolean,
     tradeAmount: number,
     tradePrice: number | undefined,
-    tradeTriggerPrice: number | undefined
+    tradeTriggerPrice: number | undefined,
+    decimals: number
   ): Promise<PlaceOrderResponse> {
     const side = isBuy ? 'buy' : 'sell';
     let response;
-    if (tradePrice && tradeTriggerPrice) {
-      // todo
-    } else if (tradePrice) {
+    try {
+      if (this.ensurePositiveLimit()) {
+        const roundScaleFactor = Math.pow(10, decimals);
+        tradeAmount = Math.round(tradeAmount * roundScaleFactor) / roundScaleFactor;
 
-      // round to 0 decimals // change for other COINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-      // tradePrice = Math.round(tradePrice);
+        if (tradePrice && tradeTriggerPrice) {
+          // todo
+        } else if (tradePrice) {
 
+          // round to 0 decimals // change for other COINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+          // tradePrice = Math.round(tradePrice);
 
-      response = await bitvavo.placeOrder(market, side, 'limit', { amount: tradeAmount, price: tradePrice });
-    } else {
-      response = await bitvavo.placeOrder(market, side, 'market', { amount: tradeAmount});
+          response = await bitvavo.placeOrder(market, side, 'limit', { amount: tradeAmount, price: tradePrice });
+        } else {
+          response = await bitvavo.placeOrder(market, side, 'market', { amount: tradeAmount});
+        }
+      }
+    } catch (error) {
+      //return Promise.reject();
     }
     console.log('amountRemaining: ', response.amountRemaining);
     return new PlaceOrderResponse(response);
   }
 
   public async cancelOrder(market: string, orderId: string): Promise<void> {
-    await bitvavo.cancelOrder(market, orderId);
+    try {
+      if (this.ensurePositiveLimit()) {
+        await bitvavo.cancelOrder(market, orderId);
+      }
+    } catch (error) {
+      return Promise.reject();
+    }
   }
 
   public async getTrades(asset: Asset): Promise<TradeResponse[]> {

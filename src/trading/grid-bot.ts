@@ -166,6 +166,7 @@ export class GridBot extends Bot {
         for (let trade of trades) {
             totalAmount += trade.amount;
             totalFilledInEuros += trade.amount * trade.price - trade.fee;
+            this.feePaid += trade.fee;
         }
 
         if (trades[0].isBuy) {
@@ -230,18 +231,23 @@ export class GridBot extends Bot {
 
     private async placeInitialOrders(): Promise<void> {
         // tslint:disable-next-line: prefer-const
-        for (let price of this.gridLines) {
+        let delay = 0;
+        for (const price of this.gridLines) {
             if (price < this.currentHiddenGridLine - this.gridLineDistance / 10) {
-                // todo: waarom zou je awaiten? Ik kan alle orders parallel afschieten.
-                await this.placeBuyOrder(this.tradeAmountInAltPerGridLine, price);
+                setTimeout(() => {
+                    this.placeBuyOrder(this.tradeAmountInAltPerGridLine, price);
+                }, delay);
             } else if (price > this.currentHiddenGridLine + this.gridLineDistance / 10) {
-                await this.placeSellOrder(this.tradeAmountInAltPerGridLine, price);
+                setTimeout(() => {
+                    this.placeSellOrder(this.tradeAmountInAltPerGridLine, price);
+                }, delay);
             }
+            delay += 100;
         }
     }
 
     private async placeInitialBuyOrder(amount: number): Promise<PlaceOrderResponse> {
-        amount = Math.round(amount * 100000) / 100000;
+        amount = Math.round(amount * 1000) / 1000;
         console.log('place initial buy order, amount: ' + amount);
         const response = await this.coinService.placeBuyOrder(this.config.asset, amount, undefined, undefined);
         const placeOrderResponse = new PlaceOrderResponse(response);
@@ -262,7 +268,8 @@ export class GridBot extends Bot {
     }
 
     private async placeBuyOrder(amount: number, price: number): Promise<void> {
-        amount = Math.round(amount * 100000) / 100000;
+        amount = Math.round(amount * 1000) / 1000;
+        price = Math.round(price * 10) / 10;
         console.log('place buy order, amount: ' + amount + ', price: ' + price);
         const response = await this.coinService.placeBuyOrder(this.config.asset, amount, price, undefined);
         this.placeOrderResponses.push(response);
@@ -270,7 +277,8 @@ export class GridBot extends Bot {
     }
 
     private async placeSellOrder(amount: number, price: number): Promise<void> {
-        amount = Math.round(amount * 100000) / 100000;
+        amount = Math.round(amount * 1000) / 1000;
+        price = Math.round(price * 10) / 10;
         console.log('place sell order, amount: ' + amount + ', price: ' + price);
         const response = await this.coinService.placeSellOrder(this.config.asset, amount, price, undefined);
         this.placeOrderResponses.push(response);

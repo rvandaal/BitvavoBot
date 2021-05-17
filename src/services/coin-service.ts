@@ -70,7 +70,7 @@ export class CoinService {
         tradePrice: number | undefined,
         tradeTriggerPrice: number | undefined
     ): Promise<PlaceOrderResponse> {
-        return this.bitvavoService.placeBuyOrder(asset.euroTradingPair, tradeAmount, tradePrice, tradeTriggerPrice);
+        return this.bitvavoService.placeBuyOrder(asset.euroTradingPair, tradeAmount, tradePrice, tradeTriggerPrice, asset.decimals);
     }
 
     public placeSellOrder(
@@ -82,7 +82,7 @@ export class CoinService {
         if (!tradeAmount) {
             tradeAmount = asset.available; // sell all (that is not in order)
         }
-        return this.bitvavoService.placeSellOrder(asset.euroTradingPair, tradeAmount, tradePrice, tradeTriggerPrice);
+        return this.bitvavoService.placeSellOrder(asset.euroTradingPair, tradeAmount, tradePrice, tradeTriggerPrice, asset.decimals);
     }
 
     public cancelOrder(asset: Asset, orderId: string): Promise<void> {
@@ -143,7 +143,7 @@ export class CoinService {
         const assetResponses = await this.bitvavoService.getAssets();
         // tslint:disable-next-line: prefer-const
         for (let assetResponse of assetResponses) {
-            this.assetsInternal[assetResponse.symbol] = new Asset(assetResponse.symbol, assetResponse.name);
+            this.assetsInternal[assetResponse.symbol] = new Asset(assetResponse.symbol, assetResponse.name, assetResponse.decimals);
         }
     }
 
