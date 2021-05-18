@@ -1,7 +1,7 @@
 import { FillResponse } from './fill-response';
 
 export class PlaceOrderResponse {
-    public readonly orderId: string;
+    public readonly orderId: string | undefined;
     public readonly orderType: 'limit' | 'market';
     public readonly fills: FillResponse[];
     public readonly amountRemaining: number;

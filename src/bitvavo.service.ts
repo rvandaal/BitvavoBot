@@ -78,9 +78,10 @@ export class BitvavoService {
     tradeAmount: number,
     tradePrice: number | undefined,
     tradeTriggerPrice: number | undefined,
-    decimals: number
+    decimals: number,
+    priceDecimals: number
   ): Promise<PlaceOrderResponse> {
-    return this.placeOrder(market, true, tradeAmount, tradePrice, tradeTriggerPrice, decimals);
+    return this.placeOrder(market, true, tradeAmount, tradePrice, tradeTriggerPrice, decimals, priceDecimals);
   }
 
   public async placeSellOrder(
@@ -88,9 +89,10 @@ export class BitvavoService {
     tradeAmount: number,
     tradePrice: number | undefined,
     tradeTriggerPrice: number | undefined,
-    decimals: number
+    decimals: number,
+    priceDecimals: number
   ): Promise<PlaceOrderResponse> {
-    return this.placeOrder(market, false, tradeAmount, tradePrice, tradeTriggerPrice, decimals);
+    return this.placeOrder(market, false, tradeAmount, tradePrice, tradeTriggerPrice, decimals, priceDecimals);
   }
 
   public async placeOrder(
@@ -99,7 +101,8 @@ export class BitvavoService {
     tradeAmount: number,
     tradePrice: number | undefined,
     tradeTriggerPrice: number | undefined,
-    decimals: number
+    decimals: number,
+    priceDecimals: number
   ): Promise<PlaceOrderResponse> {
     const side = isBuy ? 'buy' : 'sell';
     let response;
@@ -111,7 +114,8 @@ export class BitvavoService {
         if (tradePrice && tradeTriggerPrice) {
           // todo
         } else if (tradePrice) {
-
+          const roundPriceScaleFactor = Math.pow(10, priceDecimals);
+          tradePrice = Math.round(tradePrice * roundPriceScaleFactor) / roundPriceScaleFactor;
           // round to 0 decimals // change for other COINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
           // tradePrice = Math.round(tradePrice);
 
@@ -121,9 +125,9 @@ export class BitvavoService {
         }
       }
     } catch (error) {
-      //return Promise.reject();
+      return Promise.reject();
     }
-    console.log('amountRemaining: ', response.amountRemaining);
+    //console.log('amountRemaining: ', response.amountRemaining);
     return new PlaceOrderResponse(response);
   }
 

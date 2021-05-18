@@ -36,6 +36,14 @@ export class Asset {
         this.euroMarket = new Market(symbol + '-EUR');
     }
 
+    public get priceDecimals(): number {
+        switch (this.symbol) {
+            case 'ADA':
+                return 4;
+        }
+        return 4;
+    }
+
     public get trades(): Trade[] {
         return this.tradesInternal;
     }

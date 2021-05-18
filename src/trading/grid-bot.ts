@@ -130,9 +130,13 @@ export class GridBot extends Bot {
         // Cancel all open orders
         const list: Promise<void>[] = [];
         this.placeOrderResponses.forEach(p => {
-             list.push(this.coinService.cancelOrder(this.asset, p.orderId));
+            if (p.orderId) {
+                list.push(this.coinService.cancelOrder(this.asset, p.orderId));
+            }
         });
         await Promise.all(list);
+
+        await this.coinService.updateBalance();
 
         // Sell initial investment
         await this.sellInitialInvestment();
@@ -218,7 +222,7 @@ export class GridBot extends Bot {
         let closestGridLine = 0;
         let minDistance = Number.MAX_SAFE_INTEGER;
 
-        for (let gridLinePrice = this.minBoundary; gridLinePrice <= this.maxBoundary; gridLinePrice += this.gridLineDistance) {
+        for (let gridLinePrice = this.minBoundary; gridLinePrice <= this.maxBoundary * 1.00001; gridLinePrice += this.gridLineDistance) {
             this.gridLines.push(gridLinePrice);
             const distance = Math.abs(gridLinePrice - this.currentPrice);
             if (distance < minDistance) {
@@ -247,7 +251,6 @@ export class GridBot extends Bot {
     }
 
     private async placeInitialBuyOrder(amount: number): Promise<PlaceOrderResponse> {
-        amount = Math.round(amount * 1000) / 1000;
         console.log('place initial buy order, amount: ' + amount);
         const response = await this.coinService.placeBuyOrder(this.config.asset, amount, undefined, undefined);
         const placeOrderResponse = new PlaceOrderResponse(response);
@@ -264,24 +267,28 @@ export class GridBot extends Bot {
     }
 
     private async sellInitialInvestment(): Promise<void> {
-        await this.coinService.placeSellOrder(this.config.asset, this.initialInvestmentInAlt, undefined, undefined);
+        await this.coinService.placeSellOrder(this.config.asset, this.currentValueInAlt, undefined, undefined);
     }
 
     private async placeBuyOrder(amount: number, price: number): Promise<void> {
-        amount = Math.round(amount * 1000) / 1000;
-        price = Math.round(price * 10) / 10;
         console.log('place buy order, amount: ' + amount + ', price: ' + price);
         const response = await this.coinService.placeBuyOrder(this.config.asset, amount, price, undefined);
-        this.placeOrderResponses.push(response);
-        this.botService.registerBotForOpenOrder(response.orderId, this);
+        if (response) {
+            this.placeOrderResponses.push(response);
+            if (response.orderId) {
+                this.botService.registerBotForOpenOrder(response.orderId, this);
+            }
+        }
     }
 
     private async placeSellOrder(amount: number, price: number): Promise<void> {
-        amount = Math.round(amount * 1000) / 1000;
-        price = Math.round(price * 10) / 10;
         console.log('place sell order, amount: ' + amount + ', price: ' + price);
         const response = await this.coinService.placeSellOrder(this.config.asset, amount, price, undefined);
-        this.placeOrderResponses.push(response);
-        this.botService.registerBotForOpenOrder(response.orderId, this);
+        if (response) {
+            this.placeOrderResponses.push(response);
+            if (response.orderId) {
+                this.botService.registerBotForOpenOrder(response.orderId, this);
+            }
+        }
     }
 }

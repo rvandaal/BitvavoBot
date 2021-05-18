@@ -70,7 +70,7 @@ export class CoinService {
         tradePrice: number | undefined,
         tradeTriggerPrice: number | undefined
     ): Promise<PlaceOrderResponse> {
-        return this.bitvavoService.placeBuyOrder(asset.euroTradingPair, tradeAmount, tradePrice, tradeTriggerPrice, asset.decimals);
+        return this.bitvavoService.placeBuyOrder(asset.euroTradingPair, tradeAmount, tradePrice, tradeTriggerPrice, asset.decimals, asset.priceDecimals);
     }
 
     public placeSellOrder(
@@ -78,11 +78,21 @@ export class CoinService {
         tradeAmount: number | undefined,
         tradePrice: number | undefined,
         tradeTriggerPrice: number | undefined
-    ): Promise<PlaceOrderResponse> {
-        if (!tradeAmount) {
+    ): Promise<PlaceOrderResponse | undefined> {
+        if (tradeAmount === 0) {
+            return Promise.reject();
+        }
+        if (!tradeAmount || tradeAmount > asset.available) {
             tradeAmount = asset.available; // sell all (that is not in order)
         }
-        return this.bitvavoService.placeSellOrder(asset.euroTradingPair, tradeAmount, tradePrice, tradeTriggerPrice, asset.decimals);
+        return this.bitvavoService.placeSellOrder(
+            asset.euroTradingPair,
+            tradeAmount,
+            tradePrice,
+            tradeTriggerPrice,
+            asset.decimals,
+            asset.priceDecimals
+        );
     }
 
     public cancelOrder(asset: Asset, orderId: string): Promise<void> {
@@ -94,7 +104,6 @@ export class CoinService {
         this.fee = new Fee(feeResponse);
     }
 
-    @loga()
     public async updateTrades(asset: Asset): Promise<void> {
         const tradeResponses = await this.bitvavoService.getTrades(asset);
         //const list = tradeResponses.map(tradeResponse => new Trade(tradeResponse));
