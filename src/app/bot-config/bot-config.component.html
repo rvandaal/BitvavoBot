@@ -77,6 +77,13 @@
           <button class="btn btn-default" type="button" (click)="onReset()">Reset</button>
           <button class="btn btn-primary pull-right" type="submit">Start bot</button>
         </div>
+
+        <div class="mt-4">
+          <button type="button" class="btn btn-primary pull-right" (click)="onBacktestBot()">Backtest bot</button>
+          <div class="mt-2">
+            Bot winst: {{botProfit}}
+          </div>
+        </div>
       </form>
     </div>
 

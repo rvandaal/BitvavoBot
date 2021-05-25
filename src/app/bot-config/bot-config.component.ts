@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { Asset } from 'src/models/asset';
-import { BotService, BotType } from 'src/services/bot.service';
+import { BotsService, BotType } from 'src/services/bots.service';
 import { GridBot } from 'src/trading/grid-bot';
 import { IGridConfig } from 'src/trading/i-grid-config';
 import { GridBotVm } from 'src/view-models/grid-bot-vm';
@@ -19,7 +19,9 @@ export class BotConfigComponent implements OnInit {
 
   gridBotVms: GridBotVm[] = [];
 
-  constructor(private botService: BotService) {
+  botProfit: number | undefined;
+
+  constructor(private botsService: BotsService) {
     this.botTypes = ['grid'];
 
     this.formGroup = new FormGroup({
@@ -47,15 +49,15 @@ export class BotConfigComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    
+
   }
 
   public get assets(): Asset[] {
-    return this.botService.assets;
+    return this.botsService.assets;
   }
 
   public onStartBot(): void {
-    const asset = this.botService.assets.find(a => a.symbol === this.formGroup.value['selectedAsset']);
+    const asset = this.botsService.assets.find(a => a.symbol === this.formGroup.value['selectedAsset']);
     if (asset) {
       if (this.formGroup.value['selectedBotType'] === 'grid'){
         const gridConfig: IGridConfig = {
@@ -68,20 +70,42 @@ export class BotConfigComponent implements OnInit {
           maxBoundary: +this.formGroup.value['maxBoundaryRange'],
         };
         console.log(gridConfig);
-        const gridBot = this.botService.startGridBot(gridConfig);
+        const gridBot = this.botsService.startGridBot(gridConfig);
         this.gridBotVms.push(new GridBotVm(gridBot));
       }
     }
   }
 
-  public async onStopBot(gridBotVm: GridBotVm) {
-    await this.botService.stopBot(gridBotVm.bot);
+  public async onStopBot(gridBotVm: GridBotVm): Promise<void> {
+    await this.botsService.stopBot(gridBotVm.bot);
     const index = this.gridBotVms.indexOf(gridBotVm);
     this.gridBotVms.splice(index, 1);
   }
 
   public onReset() {
     this.formGroup.reset({ selectedAsset: 'ETH', selectedBotType: 'grid', useHalfRange: true });
+  }
+
+  public async onBacktestBot(): Promise<void> {
+    const asset = this.botsService.assets.find(a => a.symbol === this.formGroup.value['selectedAsset']);
+    if (asset) {
+      if (this.formGroup.value['selectedBotType'] === 'grid'){
+        const gridConfig: IGridConfig = {
+          asset,
+          numberOfGridLines: this.formGroup.value['numberOfGridLines'],
+          totalInvestmentInEuro: +this.formGroup.value['totalInvestment'],
+          useHalfRange: this.formGroup.value['useHalfRange'],
+          halfRange: +this.formGroup.value['halfRange'],
+          minBoundary: +this.formGroup.value['minBoundaryRange'],
+          maxBoundary: +this.formGroup.value['maxBoundaryRange'],
+        };
+        console.log(gridConfig);
+        const gridBot = await this.botsService.backtestGridBot(gridConfig);
+        this.botProfit = gridBot.profitFromBot;
+
+        //this.gridBotVms.push(new GridBotVm(gridBot));
+      }
+    }
   }
 
 }

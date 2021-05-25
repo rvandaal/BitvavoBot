@@ -5,6 +5,7 @@ import { Trade } from 'src/models/trade';
 import { MarketVm } from 'src/view-models/market-vm';
 import { IGridConfig } from 'src/trading/i-grid-config';
 import { GridBot } from 'src/trading/grid-bot';
+import { THIS_EXPR } from '@angular/compiler/src/output/output_ast';
 
 @Component({
   selector: 'app-root',
@@ -12,6 +13,9 @@ import { GridBot } from 'src/trading/grid-bot';
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent {
+
+  // tslint:disable-next-line: variable-name
+  private _activeTabId = 2;
 
   public assets: AssetVm[] = [];
   public markets: MarketVm[] = [];
@@ -31,12 +35,24 @@ export class AppComponent {
 
   title = 'BitvavoBot';
 
+  public get activeTabId(): number {
+    return this._activeTabId;
+  }
+
+  public set activeTabId(value) {
+    if (this._activeTabId !== value) {
+      this._activeTabId = value;
+      this.onTabChange();
+    }
+  }
+
   public get tradeAmount(): number | undefined {
     const ta = this.tradeAmountRaw ? +this.tradeAmountRaw : undefined;
     return ta && !isNaN(ta) && ta > 0 ? ta : undefined;
   }
 
   constructor(private coinService: CoinService, cd: ChangeDetectorRef) {
+    this.onTabChange();
     const sortFunc = (a: AssetVm, b: AssetVm) => {
       const br = b.relativeChange;
       const ar = a.relativeChange;
@@ -133,6 +149,26 @@ export class AppComponent {
     }
   }
 
+  private onTabChange(): void {
+    switch (this._activeTabId) {
+      case 0:
+        this.coinService.isBalanceUpdated = true;
+        this.coinService.areTickerPricesUpdated = true;
+        this.coinService.areTickerPrices24hUpdated = true;
+        break;
+      case 1:
+        this.coinService.isBalanceUpdated = true;
+        this.coinService.areTickerPricesUpdated = false;
+        this.coinService.areTickerPrices24hUpdated = false;
+        break;
+      case 2:
+        this.coinService.isBalanceUpdated = false;
+        this.coinService.areTickerPricesUpdated = false;
+        this.coinService.areTickerPrices24hUpdated = false;
+        break;
+    }
+  }
+
   private handleNotifications(): void {
     const assets = this.coinService.assets;
     Object.keys(assets).forEach(key => {
@@ -152,7 +188,7 @@ export class AppComponent {
     // Check asset.euroMarket.openOrders en sync deze met assetVm.marketVm.openOrdersVm
     // fill this.markets
     // foreach asset.market:
-    // 
+    //
     // model -> viewmodel
     const assets = this.coinService.assets;
     Object.keys(assets).forEach(key => {

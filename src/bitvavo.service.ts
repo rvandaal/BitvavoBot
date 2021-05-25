@@ -8,6 +8,7 @@ import { TickerPrice24hResponse } from './response-models/ticker-price-24h-respo
 import { PlaceOrderResponse } from './response-models/place-order-response';
 import { OpenOrderResponse } from './response-models/open-order-response';
 import { FeeResponse } from './response-models/fee-reponse';
+import { CandleResponse } from './response-models/candle-response';
 declare var require: any;
 const { bitvavo } = require('./bitvavo-api');
 
@@ -73,7 +74,23 @@ export class BitvavoService {
     // })
   }
 
-  public async placeBuyOrder (
+  public async getCandles(market: string, interval: string): Promise<CandleResponse[]> {
+    try {
+      if (this.ensurePositiveLimit()) {
+        const list: CandleResponse[] = [];
+        const response = await bitvavo.candles(market, interval);
+        for (const item of response) {
+          list.push(new CandleResponse(item));
+        }
+        return list;
+      }
+      return [];
+    } catch (error) {
+      return Promise.reject();
+    }
+  }
+
+  public async placeBuyOrder(
     market: string,
     tradeAmount: number,
     tradePrice: number | undefined,
@@ -110,7 +127,7 @@ export class BitvavoService {
       if (this.ensurePositiveLimit()) {
         const roundScaleFactor = Math.pow(10, decimals);
         tradeAmount = Math.round(tradeAmount * roundScaleFactor) / roundScaleFactor;
-
+        this.logLimit();
         if (tradePrice && tradeTriggerPrice) {
           // todo
         } else if (tradePrice) {
@@ -127,6 +144,7 @@ export class BitvavoService {
     } catch (error) {
       return Promise.reject();
     }
+    this.logLimit();
     //console.log('amountRemaining: ', response.amountRemaining);
     return new PlaceOrderResponse(response);
   }
@@ -224,5 +242,9 @@ export class BitvavoService {
   private ensurePositiveLimit(): boolean {
     const result = bitvavo.getRemainingLimit();
     return result > 100;
+  }
+
+  public logLimit(): void {
+    console.log(bitvavo.getRemainingLimit());
   }
 }

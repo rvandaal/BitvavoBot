@@ -7,7 +7,6 @@ import { AppComponent } from './app.component';
 import { NgToggleModule } from '@nth-cloud/ng-toggle';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
-import { BotService } from 'src/services/bot.service';
 import { CoinService } from 'src/services/coin-service';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { BotConfigComponent } from './bot-config/bot-config.component';
@@ -35,8 +34,7 @@ import { GridBotComponent } from './grid-bot/grid-bot.component';
     NgBootstrapFormValidationModule
   ],
   providers: [
-    BotService,
-    CoinService
+    CoinService,
   ],
   bootstrap: [AppComponent]
 })

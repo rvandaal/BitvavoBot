@@ -9,6 +9,7 @@ import { OpenOrder } from 'src/models/open-order';
 import { TickerPrice } from 'src/models/ticker-price';
 import { TickerPrice24h } from 'src/models/ticker-price-24h';
 import { Trade } from 'src/models/trade';
+import { CandleResponse } from 'src/response-models/candle-response';
 import { PlaceOrderResponse } from 'src/response-models/place-order-response';
 
 export type AssetDictionary = Record<string, Asset>;
@@ -32,6 +33,10 @@ export class CoinService {
 
     public fee?: Fee;
 
+    public isBalanceUpdated = true;
+    public areTickerPricesUpdated = true;
+    public areTickerPrices24hUpdated = true;
+
     public get assets(): AssetDictionary {
         return this.assetsInternal;
     }
@@ -54,6 +59,7 @@ export class CoinService {
         await this.updateBalance();
         this.intervalCounter = 0;
         this.intervalId = setInterval(() => {
+
             this.performPeriodicTasks();
         }, this.smallestInterval);
     }
@@ -69,8 +75,15 @@ export class CoinService {
         tradeAmount: number,
         tradePrice: number | undefined,
         tradeTriggerPrice: number | undefined
-    ): Promise<PlaceOrderResponse> {
-        return this.bitvavoService.placeBuyOrder(asset.euroTradingPair, tradeAmount, tradePrice, tradeTriggerPrice, asset.decimals, asset.priceDecimals);
+    ): Promise<PlaceOrderResponse | undefined> {
+        return this.bitvavoService.placeBuyOrder(
+            asset.euroTradingPair,
+            tradeAmount,
+            tradePrice,
+            tradeTriggerPrice,
+            asset.decimals,
+            asset.priceDecimals
+        );
     }
 
     public placeSellOrder(
@@ -99,7 +112,7 @@ export class CoinService {
         return this.bitvavoService.cancelOrder(asset.euroMarket.marketName, orderId);
     }
 
-    public async updateFees() {
+    public async updateFees(): Promise<void> {
         const feeResponse = await this.bitvavoService.getFees();
         this.fee = new Fee(feeResponse);
     }
@@ -140,7 +153,7 @@ export class CoinService {
     }
 
     private performPeriodicTasks(): void {
-        if (this.intervalCounter % 3 === 0) {
+        if (this.intervalCounter % 5 === 0) {
             this.performTasksWithInterval1s(); // todo: verplaatsen boven de 5 check
             this.performTasksWithInterval5s();
             this.intervalCounter = 0; // change if other tasks of >5s are added
@@ -167,6 +180,10 @@ export class CoinService {
                 console.log('asset bestaat niet: ', balanceResponse.symbol);
             }
         }
+    }
+
+    public async getCandles(asset: Asset, interval: string): Promise<CandleResponse[]> {
+        return await this.bitvavoService.getCandles(asset.euroMarket.marketName, interval);
     }
 
     private async updateTickerPrices(): Promise<void> {
@@ -270,11 +287,35 @@ export class CoinService {
     }
 
     private async performTasksWithInterval5s(): Promise<void> {
-        await this.updateBalance();
-        await this.updateTickerPrices();
-        await this.updateTickerPrices24h();
+        if (this.isBalanceUpdated) {
+            this.logLimit();
+            console.log('updateBalance');
+            await this.updateBalance();
+            this.logLimit();
+            console.log('');
+        }
+
+        if (this.areTickerPricesUpdated) {
+            this.logLimit();
+            console.log('updateTickerPrices');
+            await this.updateTickerPrices();
+            this.logLimit();
+            console.log('');
+        }
+
+        if (this.areTickerPrices24hUpdated) {
+            this.logLimit();
+            console.log('updateTickerPrices24h');
+            await this.updateTickerPrices24h();
+            this.logLimit();
+            console.log('');
+        }
         this.performAnalysis();
         this.notificationsSubject.next();
+    }
+
+    private logLimit(): void {
+        this.bitvavoService.logLimit();
     }
 
     // private groupTrades(trades: Trade[]): Trade[] {

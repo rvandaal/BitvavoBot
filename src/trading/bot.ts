@@ -6,7 +6,7 @@ import { Trade } from 'src/models/trade';
 
 export class Bot {
 
-    // mss de orders doorgeven aan de hoofdbot zodat deze kan controleren 
+    // mss de orders doorgeven aan de hoofdbot zodat deze kan controleren
     // of het bedrag niet te groot is. Ook kan deze subscriben om te kijken
     // of een order gefilled is.
 
@@ -20,7 +20,7 @@ export class Bot {
 
     public async stop(): Promise<void> {}
 
-    public processFilledOrder(orderId: string, trades: Trade[]): boolean {
-        return false;
+    public processFilledOrder(orderId: string, trades: Trade[]): Promise<boolean> {
+        return Promise.reject();
     }
 }
