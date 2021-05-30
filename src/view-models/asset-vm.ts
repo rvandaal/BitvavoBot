@@ -56,7 +56,7 @@ export class AssetVm {
     }
 
     public get currentValue(): number {
-        return this.asset.currentValue;
+        return this.asset.currentValueInEuro;
     }
 
     public get change24h(): number {

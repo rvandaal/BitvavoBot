@@ -14,12 +14,14 @@ import { FlexLayoutModule } from '@angular/flex-layout';
 
 import { NgBootstrapFormValidationModule } from 'ng-bootstrap-form-validation';
 import { GridBotComponent } from './grid-bot/grid-bot.component';
+import { RsiBotComponent } from './rsi-bot/rsi-bot.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     BotConfigComponent,
-    GridBotComponent
+    GridBotComponent,
+    RsiBotComponent
   ],
   imports: [
     BrowserModule,

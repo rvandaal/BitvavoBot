@@ -1,40 +1,25 @@
 import { IBotService } from 'src/interfaces/i-bot-service';
-import { loga, logr } from 'src/logr';
-import { Asset } from 'src/models/asset';
+import { loga } from 'src/logr';
 import { Trade } from 'src/models/trade';
 import { PlaceOrderResponse } from 'src/response-models/place-order-response';
-import { BotService } from 'src/services/bot.service';
-import { BotsService } from 'src/services/bots.service';
-import { CoinService } from 'src/services/coin-service';
 import { Bot } from './bot';
 import { IGridConfig } from './i-grid-config';
 
 export class GridBot extends Bot {
 
-    private isActive = false;
     private gridLines: number[] = [];
     private currentHiddenGridLine = 0;
     private minBoundary = 0;
     private maxBoundary = 0;
-    private estimatedInitialInvestmentInEuro = 0;
-    private estimatedInitialInvestmentInAlt = 0;
 
     private placeOrderResponses: PlaceOrderResponse[] = [];
 
     public tradeAmountInAltPerGridLine = 0;
-    public numberOfBuyOrdersFilled = 0;
-    public numberOfSellOrdersFilled = 0;
-    public initialInvestmentInAlt = 0;
-    public initialInvestmentInEuro = 0;
-    public initialInvestmentPrice = 0;
-    public initialFee = 0;
-    public gridLineDistance = 0;
-    public currentValueInAlt = 0;
-    public currentCashInEuro = 0;
-    public feePaid = 0;
 
-    constructor(private config: IGridConfig, private botService: IBotService) {
-        super(config.asset);
+    public gridLineDistance = 0;
+
+    constructor(private config: IGridConfig, botService: IBotService) {
+        super(config.asset, botService);
     }
 
     public get numberOfGridLines(): number {
@@ -45,35 +30,9 @@ export class GridBot extends Bot {
         return this.config.totalInvestmentInEuro;
     }
 
-    public get currentPrice(): number {
-        return this.botService.currentPrice;
-    }
-
-    public get currentValueInEuro(): number {
-        return this.asset.currentValue;
-    }
-
-    public get profitWithoutBot(): number {
-        // todo: estimated?
-        return this.estimatedInitialInvestmentInAlt * (this.currentPrice - this.initialInvestmentPrice) - this.initialFee;
-    }
-
-    public get profitWithBot(): number {
-        return this.currentValueInAlt * this.currentPrice + this.currentCashInEuro - this.initialInvestmentInEuro;
-    }
-
-    public get profitFromBot(): number {
-        return this.profitWithBot - this.profitWithoutBot; // includes fee since we are looking at the netto value
-    }
-
     @loga()
     public async start(): Promise<void> {
-        // const fee = this.botService.fee;
-
-        if (this.isActive) { // || !fee) {
-            return;
-        }
-        this.isActive = true;
+        await super.start();
 
         this.minBoundary = this.config.minBoundary ?? 0;
         this.maxBoundary = this.config.maxBoundary ?? 0;
@@ -111,38 +70,26 @@ export class GridBot extends Bot {
 
         // initial investment. If all sell orders are filled, no buy orders, we should have 0 euro.
         this.estimatedInitialInvestmentInEuro = this.config.totalInvestmentInEuro / 2;
-        this.estimatedInitialInvestmentInAlt = this.estimatedInitialInvestmentInEuro / this.currentPrice;
 
-        console.log(`START bot, initial investment in alt: ${this.estimatedInitialInvestmentInAlt}, price: ${this.currentPrice}`);
-
-        const placeOrderResponse = await this.placeInitialBuyOrder(this.estimatedInitialInvestmentInAlt);
+        await super.placeInitialBuyOrder();
 
         this.tradeAmountInAltPerGridLine = this.initialInvestmentInAlt / ((this.config.numberOfGridLines - 1) / 2);
 
-        console.log('initial investment: ', this.estimatedInitialInvestmentInAlt, ' coins against price: ', this.initialInvestmentPrice);
-
-        await this.botService.updateBalance();
-        this.initialInvestmentInEuro = this.initialInvestmentInAlt * this.initialInvestmentPrice - this.initialFee;
-
         // grid lines are now known; place orders
-
         await this.placeInitialOrders();
     }
 
     public async stop(): Promise<void> {
         // Cancel all open orders
-        const list: Promise<void>[] = [];
-        this.placeOrderResponses.forEach(p => {
+        await Promise.all(this.placeOrderResponses.map(p => {
             if (p.orderId) {
-                list.push(this.botService.cancelOrder(this.asset, p.orderId));
+                return this.botService.cancelOrder(this.asset, p.orderId);
             }
-        });
-        await Promise.all(list);
-
-        await this.botService.updateBalance();
+            return Promise.resolve();
+        }));
 
         // Sell initial investment
-        await this.sellInitialInvestment();
+        await super.stop();
     }
 
     @loga()
@@ -245,41 +192,13 @@ export class GridBot extends Bot {
         console.log('---------------------------------------------------');
         console.log('Place initial orders');
         // tslint:disable-next-line: prefer-const
-        let delay = 0;
         for (const price of this.gridLines) {
             if (price < this.currentHiddenGridLine - this.gridLineDistance / 10) {
-                //setTimeout(() => { // todo: don't use setTimeout, this is not convenient when backtesting
-                    await this.placeBuyOrder(this.tradeAmountInAltPerGridLine, price);
-                //}, delay);
+                await this.placeBuyOrder(this.tradeAmountInAltPerGridLine, price);
             } else if (price > this.currentHiddenGridLine + this.gridLineDistance / 10) {
-                //setTimeout(() => {
-                    await this.placeSellOrder(this.tradeAmountInAltPerGridLine, price);
-                //}, delay);
+                await this.placeSellOrder(this.tradeAmountInAltPerGridLine, price);
             }
-            //delay += 100;
         }
-    }
-
-    private async placeInitialBuyOrder(amount: number): Promise<PlaceOrderResponse> {
-        console.log('Place initial buy order, amount: ' + amount);
-        const placeOrderResponse = await this.botService.placeBuyOrder(this.asset, amount, undefined);
-        if (!placeOrderResponse) {
-            return Promise.reject();
-        }
-        this.currentValueInAlt = placeOrderResponse.fills[0].amount;
-        this.initialInvestmentInAlt = this.currentValueInAlt;
-        console.log('Initial alt value: ', this.currentValueInAlt);
-        console.log('initial buy place order: ', placeOrderResponse);
-        this.initialInvestmentPrice = placeOrderResponse.fills[0].price;
-        this.initialFee = placeOrderResponse.fills[0].fee;
-        return placeOrderResponse;
-        // console.log('Bought against price: ', (response as any).fills[0].price);
-
-        // tested: wat je betaalt is: initialAmount * initialPrice + initialFee
-    }
-
-    private async sellInitialInvestment(): Promise<void> {
-        await this.botService.placeSellOrder(this.asset, this.currentValueInAlt, undefined);
     }
 
     private async placeBuyOrder(amount: number, price: number): Promise<void> {
@@ -287,9 +206,6 @@ export class GridBot extends Bot {
         const response = await this.botService.placeBuyOrder(this.asset, amount, price);
         if (response) {
             this.placeOrderResponses.push(response);
-            // if (response.orderId) {
-            //     this.botsService.registerBotForOpenOrder(response.orderId, this);
-            // }
         }
     }
 
@@ -298,9 +214,6 @@ export class GridBot extends Bot {
         const response = await this.botService.placeSellOrder(this.asset, amount, price);
         if (response) {
             this.placeOrderResponses.push(response);
-            // if (response.orderId) {
-            //     this.botsService.registerBotForOpenOrder(response.orderId, this);
-            // }
         }
     }
 }

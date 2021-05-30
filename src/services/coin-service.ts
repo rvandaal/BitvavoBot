@@ -14,6 +14,14 @@ import { PlaceOrderResponse } from 'src/response-models/place-order-response';
 
 export type AssetDictionary = Record<string, Asset>;
 
+interface ICandleConfig {
+    asset: Asset;
+    interval: number;
+    candleInterval: string;
+    subject: Subject<CandleResponse[]>;
+}
+type CandleConfigDictionary = { [asset: string]: ICandleConfig };
+
 
 // This class is responsible for converting response models into domain models.
 // It holds all relevant information that is not view specific and could be persisted.
@@ -30,6 +38,9 @@ export class CoinService {
 
     private notificationsSubject = new Subject<void>();
     private openOrderFilledSubject = new Subject<string>();
+
+    private candleConfigs: CandleConfigDictionary;
+    private minimumCandleInterval = Number.MAX_SAFE_INTEGER;
 
     public fee?: Fee;
 
@@ -51,6 +62,18 @@ export class CoinService {
 
     constructor(private bitvavoService: BitvavoService) {
         this.assetsInternal = {};
+        this.candleConfigs = {};
+    }
+
+    public registerForCandles(asset: Asset, intervalInSeconds: number, candleInterval: string): Observable<CandleResponse[]> {
+        if (!(asset.symbol in this.candleConfigs)) {
+            const candleConfig = { asset, interval: intervalInSeconds, candleInterval, subject: new Subject<CandleResponse[]>() };
+            this.candleConfigs[asset.symbol] = candleConfig;
+        } else {
+            const candleConfig = this.candleConfigs[asset.symbol];
+            candleConfig.interval = Math.min(candleConfig.interval, intervalInSeconds);
+        }
+        return this.candleConfigs[asset.symbol].subject.asObservable();
     }
 
     public async start(): Promise<void> {
@@ -152,7 +175,16 @@ export class CoinService {
         }
     }
 
-    private performPeriodicTasks(): void {
+    private async performPeriodicTasks(): Promise<void> {
+        // loop door candleConfigs
+        // 1 config per asset en daarbij een interval
+        await Promise.all(Object.keys(this.candleConfigs).map(async key => {
+            const candleConfig = this.candleConfigs[key];
+            if (this.intervalCounter % candleConfig.interval === 0) {
+                const result = await this.getCandles(candleConfig.asset, candleConfig.candleInterval);
+                candleConfig.subject.next(result);
+            }
+        }));
         if (this.intervalCounter % 5 === 0) {
             this.performTasksWithInterval1s(); // todo: verplaatsen boven de 5 check
             this.performTasksWithInterval5s();
@@ -184,6 +216,11 @@ export class CoinService {
 
     public async getCandles(asset: Asset, interval: string): Promise<CandleResponse[]> {
         return await this.bitvavoService.getCandles(asset.euroMarket.marketName, interval);
+    }
+
+    public subscribeToCandles(asset: Asset, candleInterval: string, intervalInMilliseconds: number) {
+        // ik wil een observable die elke intervalInMilliseconds een array van candleresponses teruggeeft
+
     }
 
     private async updateTickerPrices(): Promise<void> {

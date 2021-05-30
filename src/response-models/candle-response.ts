@@ -14,4 +14,8 @@ export class CandleResponse {
         this.close = +item[4];
         this.volume = +item[5];
     }
+
+    public toString(): string {
+        return 'Low - high: ' + this.low + ', ' + this.high;
+    }
 }

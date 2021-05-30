@@ -4,11 +4,14 @@ import { Asset } from 'src/models/asset';
 import { Bot } from 'src/trading/bot';
 import { GridBot } from 'src/trading/grid-bot';
 import { IGridConfig } from 'src/trading/i-grid-config';
-import { BacktestService } from './backtest.service';
+import { GridBacktestService } from './grid-backtest.service';
 import { BotService } from './bot.service';
 import { CoinService } from './coin-service';
+import { RsiBot } from 'src/trading/rsi-bot';
+import { IRsiConfig } from 'src/trading/i-rsi-config';
+import { RsiBacktestService } from './rsi-backtest.service';
 
-export type BotType = 'grid';
+export type BotType = 'grid' | 'rsi';
 
 export type BotOrderDictionary = Record<string, Bot>;
 
@@ -43,14 +46,18 @@ export class BotsService {
 
   public startGridBot(config: IGridConfig): GridBot {
     throw new Error('May not start bot');
-    if (config.numberOfGridLines % 2 === 0) {
-      alert('number of grid lines must be odd');
-    }
-    const gridBot = new GridBot(config, this.botService);
-    this.botService.bot = gridBot;
-    gridBot.start();
-    this.bots.push(gridBot);
-    return gridBot;
+    // if (config.numberOfGridLines % 2 === 0) {
+    //   alert('number of grid lines must be odd');
+    // }
+    // const gridBot = new GridBot(config, this.botService);
+    // this.botService.bot = gridBot;
+    // gridBot.start();
+    // this.bots.push(gridBot);
+    // return gridBot;
+  }
+
+  public startRsiBot(config: IRsiConfig): RsiBot {
+    throw new Error('May not start bot');
   }
 
   public async stopBot(bot: Bot): Promise<void> {
@@ -67,16 +74,6 @@ export class BotsService {
       if (index > -1) {
         this.bots.splice(index, 1);
       }
-      // const listToDelete: string[] = [];
-      // for (const key of Object.keys(this.botOrdersInternal)) {
-      //   const foundBot = this.botOrdersInternal[key];
-      //   if (foundBot === bot) {
-      //     listToDelete.push(key);
-      //   }
-      // }
-      // listToDelete.forEach(orderId => {
-      //   delete this.botOrdersInternal[orderId];
-      // });
     }
   }
 
@@ -85,17 +82,21 @@ export class BotsService {
     if (config.numberOfGridLines % 2 === 0) {
       alert('number of grid lines must be odd');
     }
-    const backtestService = new BacktestService(this.coinService);
+    const backtestService = new GridBacktestService(this.coinService);
     const gridBot = new GridBot(config, backtestService);
-    backtestService.bot = gridBot;
-    await backtestService.start();
+    await backtestService.initialize(gridBot, '1m');
     await gridBot.start();
-    await backtestService.startLoop();
+    await backtestService.start();
     return gridBot;
   }
 
-  // @loga()
-  // public registerBotForOpenOrder(orderId: string, bot: Bot): void { // called by bot
-  //     this.botOrdersInternal[orderId] = bot;
-  // }
+  @loga()
+  public async backtestRsiBot(config: IRsiConfig): Promise<RsiBot> {
+    const backtestService = new RsiBacktestService(this.coinService, config.rsiPeriod);
+    const rsiBot = new RsiBot(config, backtestService);
+    await backtestService.initialize(rsiBot, config.candleInterval);
+    await rsiBot.start();
+    await backtestService.start();
+    return rsiBot;
+  }
 }

@@ -1,0 +1,63 @@
+<div fxLayout="row-reverse" fxLayoutAlign="start center" *ngIf="rsiBotVm">
+    <Button class="btn btn-danger ml-4" fxFlex="nogrow" (click)="onStopBot()">Stop</Button>
+    <div fxLayout="row" fxLayoutAlign="space-around start" fxFlex="grow" fxLayoutGap="40px">
+        <div fxLayout="column" fxLayoutAlign="start center" fxLayoutGap="20px" fxFlex="80px" fxFlexAlign="center">
+            <i class="icn" [ngClass]="'icn-' + rsiBotVm.asset.symbol.toLowerCase()"></i>
+            <span class="market">{{rsiBotVm.asset.euroMarket.marketName}}</span>
+        </div>
+        <div gdAreas="c c c | ial ia iau | ipl ip ipu | ifl if ifu | iel ie ieu" gdGap="8px" gdRows="auto auto auto auto auto" gdColumns="150px auto auto">
+            <h6 gdArea="c">Rsi bot</h6>
+            <span class="label" gdArea="ial">Totale investering</span>
+            <span class="label" gdArea="ipl">Candle interval</span>
+            <span class="label" gdArea="ifl">Rsi periode</span>
+            <span class="value" gdArea="ia">{{rsiBotVm.totalInvestmentInEuro | number: '0.2-2'}}</span>
+            <span class="value" gdArea="ip">{{rsiBotVm.candleInterval}}</span>
+            <span class="value" gdArea="if">{{rsiBotVm.rsiPeriod | number: '0.0-0'}}</span>
+        </div>
+        <div gdAreas="c c c | ial ia iau | ipl ip ipu | ifl if ifu | iel ie ieu" gdGap="8px" gdRows="auto auto auto auto auto" gdColumns="80px auto auto">
+            <h6 gdArea="c">Initiele investering</h6>
+            <span class="label" gdArea="ial">Investering</span>
+            <span class="label" gdArea="ipl">Prijs</span>
+            <span class="label" gdArea="ifl">Fee</span>
+            <span class="label" gdArea="iel">Investering</span>
+            <span class="value" gdArea="ia">{{rsiBotVm.initialInvestmentInAlt | number: '0.0-4'}}</span>
+            <span class="value" gdArea="ip">{{rsiBotVm.initialInvestmentPrice | number: '0.2-2'}}</span>
+            <span class="value" gdArea="if">{{rsiBotVm.initialFee | number: '0.2-2'}}</span>
+            <span class="value" gdArea="ie">{{rsiBotVm.initialInvestmentInEuro | number: '0.2-2'}}</span>
+            <span class="currency-label" gdArea="iau">{{rsiBotVm.asset.symbol}}</span>
+            <span class="currency-label" gdArea="ipu">EUR</span>
+            <span class="currency-label" gdArea="ifu">EUR</span>
+            <span class="currency-label" gdArea="ieu">EUR</span>
+        </div>
+        <div gdAreas="c c c | ial ia iau | ipl ip ipu | ifl if ifu | iel ie ieu" gdGap="8px" gdRows="auto auto auto auto auto" gdColumns="100px 50px auto">
+            <h6 gdArea="c">Bezit</h6>
+            <span class="label" gdArea="ial"># buys/sells</span>
+            <span class="label" gdArea="ipl">In bezit</span>
+            <span class="label" gdArea="ifl">Cash</span>
+            <span class="label" gdArea="iel">Betaalde fee</span>
+            <span class="value" gdArea="ia">{{rsiBotVm.numberOfBuyOrdersFilled | number: '0.0-0'}} / {{rsiBotVm.numberOfSellOrdersFilled | number: '0.0-0'}}</span>
+            <span class="value" gdArea="ip">{{rsiBotVm.currentValueInAlt | number: '0.2-4'}}</span>
+            <span class="value" gdArea="if">{{rsiBotVm.currentCashInEuro | number: '0.2-2'}}</span>
+            <span class="value" gdArea="ie">{{rsiBotVm.feePaid | number: '0.2-2'}}</span>
+            <span class="currency-label" gdArea="ipu">{{rsiBotVm.asset.symbol}}</span>
+            <span class="currency-label" gdArea="ifu">EUR</span>
+            <span class="currency-label" gdArea="ieu">EUR</span>
+        </div>
+        <div gdAreas="c c c | ial ia iau | ipl ip ipu | ifl if ifu | iel ie ieu" gdGap="8px" gdRows="auto auto auto auto auto" gdColumns="120px auto auto">
+            <h6 gdArea="c">Resultaat</h6>
+            <span class="label" gdArea="ial">Huidige prijs</span>
+            <span class="label" gdArea="ipl">Winst zonder bot</span>
+            <span class="label" gdArea="ifl">Winst met bot</span>
+            <span class="label" gdArea="iel">Winst door bot</span>
+            <span class="value" gdArea="ia">{{rsiBotVm.currentPrice | number: '0.2-2'}}</span>
+            <span class="value" gdArea="ip">{{rsiBotVm.profitWithoutBot | number: '0.2-2'}}</span>
+            <span class="value" gdArea="if">{{rsiBotVm.profitWithBot | number: '0.2-2'}}</span>
+            <span class="value" gdArea="ie">{{rsiBotVm.profitFromBot | number: '0.2-2'}}</span>
+            <span class="currency-label" gdArea="iau">EUR</span>
+            <span class="currency-label" gdArea="ipu">EUR</span>
+            <span class="currency-label" gdArea="ifu">EUR</span>
+            <span class="currency-label" gdArea="ieu">EUR</span>
+        </div>
+    </div>
+
+</div>

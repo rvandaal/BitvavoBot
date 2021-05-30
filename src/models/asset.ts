@@ -71,7 +71,7 @@ export class Asset {
         return this.available + this.inOrder;
     }
 
-    public get currentValue(): number {
+    public get currentValueInEuro(): number {
         return this.totalAmount * this.currentPrice;
     }
 
