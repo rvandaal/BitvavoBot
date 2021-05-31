@@ -17,6 +17,8 @@ class BacktestOpenOrder {
 
 export class RsiBacktestService extends BacktestService {
 
+  private currentIndex = 0;
+
   private candleSubject = new Subject<CandleResponse[]>();
 
   public get currentPrice(): number {
@@ -41,16 +43,20 @@ export class RsiBacktestService extends BacktestService {
   public async start(): Promise<void> {
     console.log('=================================================================');
     console.log('START loop, number of candles: ', this.candleResponses.length);
+
     if (this.bot && this.fee) {
       let startIndex;
       let endIndex;
-      for (let i = this.candleResponses.length - 1; i >= 0; i--) {
-        startIndex = i + 1;
-        endIndex = Math.min(this.candleResponses.length - 1, i + this.rsiPeriod + 1);
+      for (let i = this.candleResponses.length - 1301; i >= 0; i--) {                       // todo: deze loop wordt synchroon uitgevoerd, hij zou op de subscribe moeten wachten
+        console.log('------------------------------------------------------');
+        console.log('Candle: ', (this.candleResponses.length - 1 - i));
+        startIndex = i;
+        endIndex = Math.min(this.candleResponses.length, i + this.rsiPeriod + 1);
         this.currentCandle = this.candleResponses[i];
         // roep subject aan met de laatste rsiPeriod + 1 candles, hieruit kunnen 2 rsi punten worden berekend
         const result = this.candleResponses.slice(startIndex, endIndex);
         this.candleSubject.next(result);
+
       }
       console.log('Einde loop');
     }
@@ -75,5 +81,8 @@ export class RsiBacktestService extends BacktestService {
     return Promise.resolve(new PlaceOrderResponse(response));
   }
 
+  public notifyCandlesProcessed(): void {
+
+  }
 
 }

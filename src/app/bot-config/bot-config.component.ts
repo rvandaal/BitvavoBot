@@ -52,7 +52,7 @@ export class BotConfigComponent implements OnInit {
         Validators.pattern(/^[0-9\.]*$/)
       ]),
       useHalfRange: new FormControl(true),
-      candleInterval: new FormControl('1m', [
+      selectedCandleInterval: new FormControl('1m', [
         Validators.required
       ]),
       rsiPeriod: new FormControl(14, [
@@ -91,7 +91,7 @@ export class BotConfigComponent implements OnInit {
         const rsiConfig: IRsiConfig = {
           asset,
           totalInvestmentInEuro: +this.formGroup.value['totalInvestment'],
-          candleInterval: this.formGroup.value['candleInterval'],
+          candleInterval: this.formGroup.value['selectedCandleInterval'],
           rsiPeriod: +this.formGroup.value['rsiPeriod'],
           startWithOverbought: this.formGroup.value['startWithOverbought']
         };
@@ -132,7 +132,7 @@ export class BotConfigComponent implements OnInit {
         const rsiConfig: IRsiConfig = {
           asset,
           totalInvestmentInEuro: +this.formGroup.value['totalInvestment'],
-          candleInterval: this.formGroup.value['candleInterval'],
+          candleInterval: this.formGroup.value['selectedCandleInterval'],
           rsiPeriod: +this.formGroup.value['rsiPeriod'],
           startWithOverbought: this.formGroup.value['startWithOverbought']
         };

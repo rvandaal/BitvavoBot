@@ -26,4 +26,6 @@ export interface IBotService {
         tradeAmount: number | undefined,
         tradePrice: number | undefined
     ): Promise<PlaceOrderResponse | undefined>;
+
+    notifyCandlesProcessed(): void;
 }

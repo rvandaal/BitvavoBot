@@ -62,4 +62,8 @@ export class BotService implements IBotService {
   ): Promise<PlaceOrderResponse | undefined> {
     return this.coinService.placeSellOrder(asset, tradeAmount, tradePrice, undefined);
   }
+
+  public notifyCandlesProcessed(): void {
+    // do nothing
+  }
 }

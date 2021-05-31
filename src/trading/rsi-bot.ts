@@ -31,18 +31,24 @@ export class RsiBot extends Bot {
     public async start(): Promise<void> {
         await super.start();
 
+        this.currentValueInAlt = 0;
+        this.currentCashInEuro = this.config.totalInvestmentInEuro;
+
         // make initial investment
         if (this.config.startWithOverbought === true) {
             await this.placeInitialBuyOrder();
         }
 
-        this.botService.registerForCandles(this.asset, 60, '1m').pipe(takeUntil(this.destroy$)).subscribe(candleResponses => {
+        this.botService.registerForCandles(this.asset, 60, '1m').pipe(takeUntil(this.destroy$)).subscribe(async candleResponses => {
+            console.log('Subscription, processing by bot');
             this.candleResponses = candleResponses;
             this.rsi = RsiIndicator.getRsi(this.candleResponses, 14, 2);
+            console.log('rsi', this.rsi);
             if (this.shouldInitialBuyBeMade()) {
-                this.placeInitialBuyOrder();
+                await this.placeInitialBuyOrder();
             }
-            this.processRsi();
+            await this.processRsi();
+            this.botService.notifyCandlesProcessed();
         });
     }
 
@@ -59,11 +65,12 @@ export class RsiBot extends Bot {
     }
 
     private async processRsi(): Promise<void> {
+        console.log('processRsi, isEverythingSold: ', this.isEverythingSold);
         if (
             !this.isEverythingSold &&
             this.rsi &&
             (
-                this.rsi.length === 1 && this.rsi[0] > 70 ||
+                // this.rsi.length === 1 && this.rsi[0] > 70 ||
                 this.rsi.length > 1 && this.rsi[0] < 70 && this.rsi[1] > 70
             )
         ) {
@@ -71,7 +78,7 @@ export class RsiBot extends Bot {
         } else if (
             this.isEverythingSold && this.rsi &&
             (
-                this.rsi.length === 1 && this.rsi[0] < 30 ||
+                // this.rsi.length === 1 && this.rsi[0] < 30 ||
                 this.rsi.length > 1 && this.rsi[0] > 30 && this.rsi[1] < 30
             )
         ) {
@@ -79,26 +86,36 @@ export class RsiBot extends Bot {
         }
     }
 
-    protected placeInitialBuyOrder(): Promise<PlaceOrderResponse> {
-        // amounteuro = amountalt * price * (1 + fee)
+    protected async placeInitialBuyOrder(): Promise<PlaceOrderResponse> {
         if (!this.fee) {
             throw new Error('fee is not known');
         }
-        this.estimatedInitialInvestmentInAlt = this.config.totalInvestmentInEuro / this.currentPrice / (1 + this.fee.taker);
+        this.estimatedInitialInvestmentInEuro = this.config.totalInvestmentInEuro;
         return super.placeInitialBuyOrder();
     }
 
     private async buy(): Promise<void> {
-        const placeOrderResponse = await this.botService.placeBuyOrder(this.asset, this.initialInvestmentInAlt, undefined);
-        if (!placeOrderResponse) {
-            return Promise.reject();
+        console.log('Buy');
+        if (!this.isInitialInvestmentMade) {
+            console.log('Place initial buy order in buy()');
+            await this.placeInitialBuyOrder();
+        } else {
+            const placeOrderResponse = await this.botService.placeBuyOrder(this.asset, this.initialInvestmentInAlt, undefined);
+            if (!placeOrderResponse) {
+                return Promise.reject();
+            }
+            const fill = placeOrderResponse.fills[0];
+            this.currentValueInAlt += fill.amount;
+            this.currentCashInEuro -= fill.buyFillCostInEuro;
         }
-        const fill = placeOrderResponse.fills[0];
-        this.currentValueInAlt += fill.amount;
-        this.currentCashInEuro -= fill.buyFillCostInEuro;
+        this.isEverythingSold = false;
     }
 
     private async sell(): Promise<void> {
+        console.log('Sell');
+        if (!this.isInitialInvestmentMade) {
+            return;
+        }
         const placeOrderResponse = await this.botService.placeSellOrder(this.asset, this.initialInvestmentInAlt, undefined);
         if (!placeOrderResponse) {
             return Promise.reject();
@@ -106,5 +123,6 @@ export class RsiBot extends Bot {
         const fill = placeOrderResponse.fills[0];
         this.currentValueInAlt -= fill.amount;
         this.currentCashInEuro += fill.sellFillGainInEuro;
+        this.isEverythingSold = true;
     }
 }

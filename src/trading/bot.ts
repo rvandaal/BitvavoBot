@@ -91,15 +91,18 @@ export class Bot {
         if (!this.fee) {
             return Promise.reject();
         }
-        await this.botService.updateBalance(); // check the balance before buying something
+        // todo: await this.botService.updateBalance(); // check the balance before buying something
         this.estimatedInitialInvestmentInAlt = this.estimatedInitialInvestmentInEuro / this.currentPrice / (1 + this.fee.taker);
+        console.log('Place initial buy order: ' + this.estimatedInitialInvestmentInAlt + ' ALT');
         const placeOrderResponse = await this.botService.placeBuyOrder(this.asset, this.estimatedInitialInvestmentInAlt, undefined);
         if (!placeOrderResponse) {
             return Promise.reject();
         }
+        console.log('Order placed');
         const fill = placeOrderResponse.fills[0];
         this.initialInvestmentInAlt = fill.amount;
         this.currentValueInAlt = this.initialInvestmentInAlt;
+        this.currentCashInEuro -= fill.buyFillCostInEuro;
         this.initialInvestmentPrice = fill.price;
         this.initialFee = fill.fee;
         this.isInitialInvestmentMade = true;

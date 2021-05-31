@@ -34,6 +34,9 @@ export class GridBot extends Bot {
     public async start(): Promise<void> {
         await super.start();
 
+        this.currentValueInAlt = 0;
+        this.currentCashInEuro = this.config.totalInvestmentInEuro;
+
         this.minBoundary = this.config.minBoundary ?? 0;
         this.maxBoundary = this.config.maxBoundary ?? 0;
         const halfRange = this.config.halfRange;

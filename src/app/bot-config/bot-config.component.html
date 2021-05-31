@@ -76,7 +76,7 @@
         <div *ngIf="formGroup.value['selectedBotType'] === 'rsi'">
           <div class="form-group">
             <label class="control-label">Interval</label>
-            <ng-select formControlName="candleInterval" [searchable]="true" [items]="candleIntervals" placeholder="Select candle interval">
+            <ng-select formControlName="selectedCandleInterval" [searchable]="true" [items]="candleIntervals" placeholder="Select candle interval">
             </ng-select>
           </div>
           <div class="form-group">

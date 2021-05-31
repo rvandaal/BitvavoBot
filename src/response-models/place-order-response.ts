@@ -4,10 +4,10 @@ export class PlaceOrderResponse {
     public readonly orderId: string | undefined;
     public readonly orderType: 'limit' | 'market';
     public readonly fills: FillResponse[];
-    public readonly amountRemaining: number;
-    public readonly created: Date;
-    public readonly filledAmount: number;
-    public readonly filledAmountQuote: number;
+    public readonly amountRemaining?: number;
+    public readonly created?: Date;
+    public readonly filledAmount?: number;
+    public readonly filledAmountQuote?: number;
 
     constructor(item: any) {
         this.orderId = item.orderId;

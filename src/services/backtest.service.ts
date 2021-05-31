@@ -61,7 +61,7 @@ export class BacktestService implements IBotService {
     return Promise.resolve();
   }
 
-  public async placeBuyOrder(
+  public placeBuyOrder(
       asset: Asset,
       tradeAmount: number,
       tradePrice: number | undefined
@@ -70,7 +70,7 @@ export class BacktestService implements IBotService {
 
   }
 
-  public async placeSellOrder(
+  public placeSellOrder(
       asset: Asset,
       tradeAmount: number | undefined,
       tradePrice: number | undefined
@@ -78,7 +78,7 @@ export class BacktestService implements IBotService {
     return this.placeOrder(asset, tradeAmount, tradePrice, false);
   }
 
-  public async placeOrder(
+  public placeOrder(
     asset: Asset,
     tradeAmount: number | undefined,
     tradePrice: number | undefined,
@@ -87,12 +87,17 @@ export class BacktestService implements IBotService {
     return Promise.reject();
   }
 
+  public notifyCandlesProcessed(): void {
+
+  }
+
   protected getMarketOrderResponse(tradeAmount: number | undefined): any {
     if (!this.currentCandle || !tradeAmount) {
         return undefined;
     }
     return {
         orderId: this.orderId.toString(),
+        orderType: 'market',
         fills: [
           {
             amount: tradeAmount,

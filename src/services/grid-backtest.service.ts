@@ -100,6 +100,7 @@ export class GridBacktestService extends BacktestService {
       this.openOrders.push(openOrder);
       response = {
         orderId: this.orderId.toString(),
+        orderType: 'limit',
         fills: []
       };
       this.orderId++;
