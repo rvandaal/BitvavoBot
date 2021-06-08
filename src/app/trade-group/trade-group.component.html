@@ -1,0 +1,35 @@
+<div *ngIf="viewModel">
+    <table class="table table-sm flex-fill">
+      <thead *ngIf="viewModel.level === 0">
+        <tr>
+          <th scope="col" style="width: 28%">ID</th>
+          <th scope="col" style="width: 12%">Tijd</th>
+          <th scope="col" style="width: 12%">Hoeveelheid</th>
+          <th scope="col" style="width: 12%">Gem. Prijs</th>
+          <th scope="col" style="width: 12%">Fee</th>
+          <th scope="col" style="width: 12%">Aantal alts</th>
+          <th scope="col" style="width: 12%">Aantal euros</th>
+        </tr>
+      </thead>
+      <tbody>
+        <ng-container *ngFor="let child of viewModel.children; index as i">
+          <tr (click)="child.toggleRowDetails()">
+            <td style="width: 28%" *ngIf="child.hasChildren"><span [style.marginLeft.px]="(child.level - 1) * 20">{{child.name}}</span></td>
+            <td style="width: 28%" *ngIf="!child.hasChildren"></td>
+            <td style="width: 12%">Time: {{child.date | date: 'H:mm'}}</td>
+            <td style="width: 12%">Amount: {{child.amount | number: '0.2-2'}}</td>
+            <td style="width: 12%">Price: {{child.price | number: '0.2-2'}}</td>
+            <td style="width: 12%">Fee: {{child.fee | number: '0.2-2'}}</td>
+            <td style="width: 12%">Alts: {{child.altAmountAfterTrade | number: '0.2-2'}}</td>
+            <td style="width: 12%">Euros: {{child.euroAmountAfterTrade | number: '0.2-2'}}</td>
+          </tr>
+          <tr *ngIf="child.areRowDetailsOpen">
+            <td colspan="10">
+              <app-trade-group [viewModel]="child">
+              </app-trade-group>
+            </td>
+          </tr>
+        </ng-container>
+      </tbody>
+    </table>
+</div>

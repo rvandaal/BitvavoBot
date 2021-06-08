@@ -15,13 +15,16 @@ import { FlexLayoutModule } from '@angular/flex-layout';
 import { NgBootstrapFormValidationModule } from 'ng-bootstrap-form-validation';
 import { GridBotComponent } from './grid-bot/grid-bot.component';
 import { RsiBotComponent } from './rsi-bot/rsi-bot.component';
+import { TradeGroupComponent } from './trade-group/trade-group.component';
+import { DatePipe } from '@angular/common';
 
 @NgModule({
   declarations: [
     AppComponent,
     BotConfigComponent,
     GridBotComponent,
-    RsiBotComponent
+    RsiBotComponent,
+    TradeGroupComponent,
   ],
   imports: [
     BrowserModule,
@@ -37,6 +40,7 @@ import { RsiBotComponent } from './rsi-bot/rsi-bot.component';
   ],
   providers: [
     CoinService,
+    DatePipe
   ],
   bootstrap: [AppComponent]
 })

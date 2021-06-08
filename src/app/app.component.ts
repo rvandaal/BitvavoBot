@@ -1,24 +1,40 @@
-import { ChangeDetectorRef, Component, InjectionToken } from '@angular/core';
+import { ChangeDetectorRef, Component, InjectionToken, OnInit } from '@angular/core';
 import { CoinService } from 'src/services/coin-service';
 import { AssetVm } from 'src/view-models/asset-vm';
 import { Trade } from 'src/models/trade';
 import { MarketVm } from 'src/view-models/market-vm';
-import { IGridConfig } from 'src/trading/i-grid-config';
-import { GridBot } from 'src/trading/grid-bot';
-import { THIS_EXPR } from '@angular/compiler/src/output/output_ast';
+import { ITradeVm } from 'src/interfaces/i-trade-vm';
+import { TradeGroupVm } from 'src/view-models/trade-group-vm';
+import { DatePipe } from '@angular/common';
+import { TradeVm } from 'src/view-models/trade-vm';
+
+interface EuroBalanceSnapshot {
+  date: Date;
+  amount: number;
+}
 
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss']
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
+
+  private euroBalance: EuroBalanceSnapshot[] = [
+    {
+      date: new Date(2021, 5, 8, 21, 22, 0),
+      amount: 20325 // euro
+    }
+  ];
 
   // tslint:disable-next-line: variable-name
   private _activeTabId = 2;
+  private selectedAssetForTransactionsInternal: AssetVm | undefined;
+  private tradeFlatList: TradeVm[] = [];
 
   public assets: AssetVm[] = [];
   public markets: MarketVm[] = [];
+  public tradeGroupRoot: ITradeVm;
 
   public trades: Trade[] | undefined;
   public assetWithTradeDetailsOpen: AssetVm | undefined;
@@ -46,13 +62,23 @@ export class AppComponent {
     }
   }
 
+  public get selectedAssetForTransactions(): AssetVm | undefined {
+    return this.selectedAssetForTransactionsInternal;
+  }
+
+  public set selectedAssetForTransactions(value) {
+    if (this.selectedAssetForTransactionsInternal !== value) {
+      this.selectedAssetForTransactionsInternal = value;
+      this.updateTrades();
+    }
+  }
+
   public get tradeAmount(): number | undefined {
     const ta = this.tradeAmountRaw ? +this.tradeAmountRaw : undefined;
     return ta && !isNaN(ta) && ta > 0 ? ta : undefined;
   }
 
-  constructor(private coinService: CoinService, cd: ChangeDetectorRef) {
-    this.onTabChange();
+  constructor(private coinService: CoinService, private cd: ChangeDetectorRef, private datePipe: DatePipe) {
     const sortFunc = (a: AssetVm, b: AssetVm) => {
       const br = b.relativeChange;
       const ar = a.relativeChange;
@@ -65,12 +91,22 @@ export class AppComponent {
         this.handleNotifications();
       }
     });
+    this.tradeGroupRoot = new TradeGroupVm('root', 'root', 0);
+
     // this.coinService.openOrders$.subscribe({
     //   next: (openOrders: OpenOrder[]) => {
     //     this.syncOpenOrders(openOrders);
     //   }
     // })
-    // this.coinService.start();
+  }
+
+  public ngOnInit(): void {
+    (async () => {
+      await this.coinService.start();
+      setTimeout(() => {
+        this.onTabChange();
+      }, 2000);
+    })();
   }
 
   public get openOrderMarkets(): MarketVm[] {
@@ -103,9 +139,10 @@ export class AppComponent {
 
   public onClickTableRow(event: Event, assetVm: AssetVm): void {
     (async () => {
-      if (!assetVm.trades) {
+      if (!assetVm.trades || !assetVm.trades.length) {
         await this.coinService.updateTrades(assetVm.asset);
       }
+      this.updateTradeVms(assetVm);
       if (!this.assetWithTradeDetailsOpen || this.assetWithTradeDetailsOpen !== assetVm) {
         this.trades = assetVm.trades;
         this.assetWithTradeDetailsOpen = assetVm;
@@ -165,8 +202,37 @@ export class AppComponent {
         this.coinService.isBalanceUpdated = false;
         this.coinService.areTickerPricesUpdated = false;
         this.coinService.areTickerPrices24hUpdated = false;
+        this.updateTrades();
         break;
+      case 3:
+        this.coinService.isBalanceUpdated = false;
+        this.coinService.areTickerPricesUpdated = false;
+        this.coinService.areTickerPrices24hUpdated = false;
+        break;
+
+
     }
+  }
+
+  private updateTrades(): void {
+    const assetVm = this.selectedAssetForTransactions;
+    if (!assetVm) {
+      return;
+    }
+    (async () => {
+      await this.coinService.start();
+      if (!assetVm.trades || !assetVm.trades.length) {
+        await this.coinService.updateTrades(assetVm.asset);
+      }
+      this.updateTradeVms(assetVm);
+      // if (!this.assetWithTradeDetailsOpen || this.assetWithTradeDetailsOpen !== assetVm) {
+      //   this.trades = assetVm.trades;
+      //   this.assetWithTradeDetailsOpen = assetVm;
+      // } else {
+      //   this.trades = undefined;
+      //   this.assetWithTradeDetailsOpen = undefined;
+      // }
+    })();
   }
 
   private handleNotifications(): void {
@@ -181,7 +247,102 @@ export class AppComponent {
         assetVm.asset = asset;
       }
     });
+    this.cd.detectChanges();
     // todo: delete assetVm's if they are not in the model anymore.
+  }
+
+  private updateTradeVms(assetVm: AssetVm): void {
+    // asset.trades are not grouped. Group them in the viewmodel.
+    const trades = assetVm.asset.trades;
+    // tslint:disable-next-line: prefer-const
+    for (let trade of trades) {
+      const year = trade.date.getFullYear().toString();
+      const month = trade.date.getMonth().toString();
+      const day = trade.date.getDate().toString();
+      const orderId = trade.orderId;
+      const tradeId = trade.id;
+
+      let tradeYearVm = this.tradeGroupRoot.children.find(y => y.id === year);
+      if (!tradeYearVm) {
+        const yearString = this.datePipe.transform(trade.date, 'yyyy');
+        if (!yearString) {
+          return;
+        }
+        tradeYearVm = new TradeGroupVm(year, yearString, 1);
+        this.tradeGroupRoot.children.push(tradeYearVm);
+      }
+      let tradeMonthVm = tradeYearVm.children.find(m => m.id === month);
+      if (!tradeMonthVm) {
+        const monthString = this.datePipe.transform(trade.date, 'MMM');
+        if (!monthString) {
+          return;
+        }
+        tradeMonthVm = new TradeGroupVm(month, monthString, 2);
+        tradeYearVm.children.push(tradeMonthVm);
+      }
+      let tradeDayVm = tradeMonthVm.children.find(d => d.id === day);
+      if (!tradeDayVm) {
+        const dayString = this.datePipe.transform(trade.date, 'dd');
+        if (!dayString) {
+          return;
+        }
+        tradeDayVm = new TradeGroupVm(day, dayString, 3);
+        tradeMonthVm.children.push(tradeDayVm);
+      }
+      let tradeDecisionVm = tradeDayVm.children.find(d => d.id === orderId);
+      if (!tradeDecisionVm) {
+        tradeDecisionVm = new TradeGroupVm(orderId, orderId, 4);
+        tradeDayVm.children.push(tradeDecisionVm);
+      }
+      let tradeVm = tradeDecisionVm.children.find(t => t.id === tradeId);
+      if (!tradeVm) {
+        tradeVm = new TradeVm(trade.id, trade, 5);
+        tradeDecisionVm.children.push(tradeVm);
+        if (tradeVm instanceof TradeVm) {
+          this.tradeFlatList.push(tradeVm);
+        }
+      }
+    }
+
+    this.updateAfterTradeStatus(assetVm);
+
+    //console.log('trades: ', this.tradeYears);
+  }
+
+  private async updateAfterTradeStatus(assetVm: AssetVm): Promise<void> {
+    const euroAsset = this.coinService.euroAsset;
+    const lastEuroBalanceSnapshot = this.euroBalance[0];
+    let isTradeBeforeEuroBalanceSnapshot = false;
+    let euroOffset = 0;
+    await this.coinService.updateBalance(assetVm.asset);
+    console.log('trades: ', this.tradeGroupRoot);
+    if (this.tradeFlatList.length) {
+      const lastTrade = this.tradeFlatList[0];
+      lastTrade.altAmountAfterTrade = assetVm.asset.totalAmount;
+      lastTrade.euroAmountAfterTrade = euroAsset.totalAmount;
+      if (lastTrade.date && lastTrade.date < lastEuroBalanceSnapshot.date) {
+        isTradeBeforeEuroBalanceSnapshot = true;
+        euroOffset = lastEuroBalanceSnapshot.amount - lastTrade.euroAmountAfterTrade;
+      }
+    }
+    for (let i = 1; i < this.tradeFlatList.length; i++) {
+      const trade = this.tradeFlatList[i];
+      const previousTrade = this.tradeFlatList[i - 1];
+      trade.altAmountAfterTrade = previousTrade.altAmountAfterTrade - previousTrade.amount;
+      trade.euroAmountAfterTrade =
+        previousTrade.euroAmountAfterTrade + previousTrade.amount * previousTrade.price + previousTrade.fee;
+      if (trade.date && !isTradeBeforeEuroBalanceSnapshot && trade.date < lastEuroBalanceSnapshot.date) {
+        euroOffset = lastEuroBalanceSnapshot.amount - trade.euroAmountAfterTrade;
+        isTradeBeforeEuroBalanceSnapshot = true;
+      }
+    }
+
+    if (euroOffset !== 0) {
+      for (const trade of this.tradeFlatList) {
+        trade.euroAmountAfterTrade += euroOffset;
+      }
+    }
+
   }
 
   private syncOpenOrders(): void {

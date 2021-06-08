@@ -21,10 +21,10 @@ thead th {
 
 thead th {
     /* Set header to stick to the top of the container. */
-    position: sticky; 
+    position: sticky;
     top: 0px;
-    
-    /* This is needed otherwise the sticky header will be transparent 
+
+    /* This is needed otherwise the sticky header will be transparent
     */
     background-color: white;
 
@@ -75,4 +75,9 @@ button.buy-sell {
 
 input.buy-sell {
     width: 150px;
+}
+
+app-trade-group {
+    width: 100%;
+    margin-top: 20px;
 }

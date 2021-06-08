@@ -35,7 +35,7 @@ export class BitvavoService {
         const response = await bitvavo.assets({});
         // tslint:disable-next-line: prefer-const
         for (let item of response) {
-          if (!['EUR', 'AE', 'DASH'].includes(item.symbol)) {
+          if (!['AE', 'DASH'].includes(item.symbol)) {
             list.push(new AssetResponse(item));
           }
         }
@@ -47,14 +47,14 @@ export class BitvavoService {
     }
   }
 
-  public async getBalance(): Promise<BalanceResponse[]>{
+  public async getBalance(symbol?: string): Promise<BalanceResponse[]>{
     try {
       if (this.ensurePositiveLimit()) {
         const list: BalanceResponse[] = [];
-        const response = await bitvavo.balance({});
+        const response = await bitvavo.balance(symbol ? { symbol } : {});
         // tslint:disable-next-line: prefer-const
         for (let item of response) {
-          if (!['EUR', 'AE', 'DASH'].includes(item.symbol)) {
+          if (!['AE', 'DASH'].includes(item.symbol)) {
             list.push(new BalanceResponse(item));
           }
         }
@@ -159,11 +159,19 @@ export class BitvavoService {
     }
   }
 
-  public async getTrades(asset: Asset): Promise<TradeResponse[]> {
+  public async getTrades(asset: Asset, limit = 1000, start?: number, end ?: number): Promise<TradeResponse[]> {
     try {
       if (this.ensurePositiveLimit()) {
         const list: TradeResponse[] = [];
-        const response = await bitvavo.trades(asset.euroTradingPair, {});
+        const options = { limit };
+        if (start) {
+          options['start'] = start;
+        }
+        if (end) {
+          options['end'] = end;
+        }
+
+        const response = await bitvavo.trades(asset.euroTradingPair, options);
         // tslint:disable-next-line: prefer-const
         for (let item of response) {
           list.push(new TradeResponse(item));

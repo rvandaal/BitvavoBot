@@ -31,6 +31,7 @@ type CandleConfigDictionary = { [asset: string]: ICandleConfig };
     providedIn: 'root'
 })
 export class CoinService {
+    private isActive = false;
     private readonly smallestInterval = 1000;
     private intervalCounter = 0;
     private intervalId: NodeJS.Timeout | undefined;
@@ -60,6 +61,10 @@ export class CoinService {
         return this.openOrderFilledSubject.asObservable();
     }
 
+    public get euroAsset(): Asset {
+        return this.assets['EUR'];
+    }
+
     constructor(private bitvavoService: BitvavoService) {
         this.assetsInternal = {};
         this.candleConfigs = {};
@@ -77,6 +82,10 @@ export class CoinService {
     }
 
     public async start(): Promise<void> {
+        if (this.isActive) {
+            return;
+        }
+        this.isActive = true;
         await this.updateFees();
         await this.updateAssets();
         await this.updateBalance();
@@ -193,7 +202,7 @@ export class CoinService {
         this.intervalCounter++;
     }
 
-    private async updateAssets(): Promise<void> {
+    public async updateAssets(): Promise<void> {
         const assetResponses = await this.bitvavoService.getAssets();
         // tslint:disable-next-line: prefer-const
         for (let assetResponse of assetResponses) {
@@ -201,8 +210,8 @@ export class CoinService {
         }
     }
 
-    public async updateBalance(): Promise<void> {
-        const balanceResponses = await this.bitvavoService.getBalance();
+    public async updateBalance(asset?: Asset): Promise<void> {
+        const balanceResponses = await this.bitvavoService.getBalance(asset?.symbol);
         // tslint:disable-next-line: prefer-const
         for (let balanceResponse of balanceResponses) {
             if (this.assetsInternal[balanceResponse.symbol]) {

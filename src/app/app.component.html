@@ -113,7 +113,7 @@
             <button (click)="onStartGridBotClick()" class="btn btn-primary">Start grid bot</button>
           </div>
           <div class="d-flex flex-row">
-            <table class="table flex-fill">
+            <table class="table table-sm flex-fill">
               <thead>
                 <tr>
                   <th scope="col" style="width: 5%">#</th>
@@ -142,8 +142,8 @@
                     <td style="width: 90%">{{market.marketName}}</td>
                   </tr>
                   <tr *ngIf="market.areRowDetailsOpen">
-                    <th scope="row" style="width: 5%"></th>
-                    <td scope="row" style="width: 5%"></td>
+                    <!-- <th scope="row" style="width: 5%"></th>
+                    <td scope="row" style="width: 5%"></td> -->
                     <td colspan="8">
                       <table class="flex-fill">
                         <thead>
@@ -225,12 +225,33 @@
       </ng-template>
     </li>
     <li [ngbNavItem]="2">
+      <a ngbNavLink>Transacties</a>
+      <ng-template ngbNavContent>
+        <div class="d-flex flex-column">
+          <div class="d-flex flex-row align-items-center" style="margin: 25px 0 5px 25px">
+            <div *ngIf="assets.length">
+              <ng-select style="width: 200px" [(ngModel)]="selectedAssetForTransactions" [searchable]="true" [items]="assets" bindLabel="name" placeholder="Select asset">
+              </ng-select>
+            </div>
+            <div *ngIf="!assets.length">
+              <ng-select style="width: 200px">
+              </ng-select>
+            </div>
+          </div>
+          <div class="d-flex flex-row" style="margin: 20px">
+            <app-trade-group [viewModel]="tradeGroupRoot">
+            </app-trade-group>
+          </div>
+        </div>
+      </ng-template>
+    </li>
+    <li [ngbNavItem]="4">
       <a ngbNavLink>Bots</a>
       <ng-template ngbNavContent>
         <app-bot-config style="height:100%"></app-bot-config>
       </ng-template>
     </li>
-    <li [ngbNavItem]="3" style="display: none">
+    <li [ngbNavItem]="5" style="display: none">
       <a ngbNavLink>Trading view</a>
       <ng-template ngbNavContent>
         <!-- TradingView Widget BEGIN -->
