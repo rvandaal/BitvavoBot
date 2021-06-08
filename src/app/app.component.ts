@@ -8,24 +8,12 @@ import { TradeGroupVm } from 'src/view-models/trade-group-vm';
 import { DatePipe } from '@angular/common';
 import { TradeVm } from 'src/view-models/trade-vm';
 
-interface EuroBalanceSnapshot {
-  date: Date;
-  amount: number;
-}
-
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent implements OnInit {
-
-  private euroBalance: EuroBalanceSnapshot[] = [
-    {
-      date: new Date(2021, 5, 8, 21, 22, 0),
-      amount: 20325 // euro
-    }
-  ];
 
   // tslint:disable-next-line: variable-name
   private _activeTabId = 2;
@@ -311,19 +299,12 @@ export class AppComponent implements OnInit {
 
   private async updateAfterTradeStatus(assetVm: AssetVm): Promise<void> {
     const euroAsset = this.coinService.euroAsset;
-    const lastEuroBalanceSnapshot = this.euroBalance[0];
-    let isTradeBeforeEuroBalanceSnapshot = false;
-    let euroOffset = 0;
     await this.coinService.updateBalance(assetVm.asset);
     console.log('trades: ', this.tradeGroupRoot);
     if (this.tradeFlatList.length) {
       const lastTrade = this.tradeFlatList[0];
       lastTrade.altAmountAfterTrade = assetVm.asset.totalAmount;
       lastTrade.euroAmountAfterTrade = euroAsset.totalAmount;
-      if (lastTrade.date && lastTrade.date < lastEuroBalanceSnapshot.date) {
-        isTradeBeforeEuroBalanceSnapshot = true;
-        euroOffset = lastEuroBalanceSnapshot.amount - lastTrade.euroAmountAfterTrade;
-      }
     }
     for (let i = 1; i < this.tradeFlatList.length; i++) {
       const trade = this.tradeFlatList[i];
@@ -331,18 +312,7 @@ export class AppComponent implements OnInit {
       trade.altAmountAfterTrade = previousTrade.altAmountAfterTrade - previousTrade.amount;
       trade.euroAmountAfterTrade =
         previousTrade.euroAmountAfterTrade + previousTrade.amount * previousTrade.price + previousTrade.fee;
-      if (trade.date && !isTradeBeforeEuroBalanceSnapshot && trade.date < lastEuroBalanceSnapshot.date) {
-        euroOffset = lastEuroBalanceSnapshot.amount - trade.euroAmountAfterTrade;
-        isTradeBeforeEuroBalanceSnapshot = true;
-      }
     }
-
-    if (euroOffset !== 0) {
-      for (const trade of this.tradeFlatList) {
-        trade.euroAmountAfterTrade += euroOffset;
-      }
-    }
-
   }
 
   private syncOpenOrders(): void {
