@@ -204,8 +204,11 @@ export class AppComponent implements OnInit {
   private updateTrades(): void {
     const assetVm = this.selectedAssetForTransactions;
     if (!assetVm) {
+      this.coinService.areTickerPricesUpdated = false;
       return;
     }
+    this.coinService.assetToMonitor = assetVm?.asset;
+    this.coinService.areTickerPricesUpdated = true;
     (async () => {
       await this.coinService.start();
       if (!assetVm.trades || !assetVm.trades.length) {
@@ -234,6 +237,9 @@ export class AppComponent implements OnInit {
         assetVm.asset = asset;
       }
     });
+    if (this.selectedAssetForTransactions && this._activeTabId === 2) {
+      this.updateAfterTradeStatus(this.selectedAssetForTransactions);
+    }
     this.cd.detectChanges();
     // todo: delete assetVm's if they are not in the model anymore.
   }
@@ -298,7 +304,7 @@ export class AppComponent implements OnInit {
 
   private async updateAfterTradeStatus(assetVm: AssetVm): Promise<void> {
     const euroAsset = this.coinService.euroAsset;
-    await this.coinService.updateBalance(assetVm.asset);
+    await this.coinService.updateBalance();
     console.log('trades: ', this.tradeGroupRoot);
     if (this.tradeFlatList.length) {
       const lastTrade = this.tradeFlatList[0];

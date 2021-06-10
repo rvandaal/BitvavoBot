@@ -159,7 +159,7 @@ export class BitvavoService {
     }
   }
 
-  public async getTrades(asset: Asset, limit = 1000, start?: number, end ?: number): Promise<TradeResponse[]> {
+  public async getTrades(market: string, limit = 1000, start?: number, end ?: number): Promise<TradeResponse[]> {
     try {
       if (this.ensurePositiveLimit()) {
         const list: TradeResponse[] = [];
@@ -171,7 +171,7 @@ export class BitvavoService {
           options['end'] = end;
         }
 
-        const response = await bitvavo.trades(asset.euroTradingPair, options);
+        const response = await bitvavo.trades(market, options);
         // tslint:disable-next-line: prefer-const
         for (let item of response) {
           list.push(new TradeResponse(item));
@@ -184,17 +184,21 @@ export class BitvavoService {
     }
   }
 
-  public async getTickerPrices(): Promise<TickerPriceResponse[]> {
+  public async getTickerPrices(market?: string): Promise<TickerPriceResponse[]> {
     try {
       if (this.ensurePositiveLimit()) {
         const list: TickerPriceResponse[] = [];
-        const response = await bitvavo.tickerPrice({});
-        // tslint:disable-next-line: prefer-const
-        for (let item of response) {
-          const index = item.market.indexOf('-');
-          const symbol = item.market.substr(0, index);
-          if (!['EUR', 'AE', 'DASH'].includes(symbol)) {
-            list.push(new TickerPriceResponse(item));
+        const response = await bitvavo.tickerPrice(market ? { market } : {});
+        if (market) {
+          list.push(new TickerPriceResponse(response));
+        } else {
+          // tslint:disable-next-line: prefer-const
+          for (let item of response) {
+            const index = item.market.indexOf('-');
+            const symbol = item.market.substr(0, index);
+            if (!['EUR', 'AE', 'DASH'].includes(symbol)) {
+              list.push(new TickerPriceResponse(item));
+            }
           }
         }
         return list;

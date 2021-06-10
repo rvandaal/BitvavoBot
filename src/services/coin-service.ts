@@ -43,6 +43,7 @@ export class CoinService {
     private candleConfigs: CandleConfigDictionary;
     private minimumCandleInterval = Number.MAX_SAFE_INTEGER;
 
+    public assetToMonitor: Asset | undefined;
     public fee?: Fee;
 
     public isBalanceUpdated = true;
@@ -88,10 +89,8 @@ export class CoinService {
         this.isActive = true;
         await this.updateFees();
         await this.updateAssets();
-        await this.updateBalance();
         this.intervalCounter = 0;
         this.intervalId = setInterval(() => {
-
             this.performPeriodicTasks();
         }, this.smallestInterval);
     }
@@ -150,7 +149,7 @@ export class CoinService {
     }
 
     public async updateTrades(asset: Asset): Promise<void> {
-        const tradeResponses = await this.bitvavoService.getTrades(asset);
+        const tradeResponses = await this.bitvavoService.getTrades(asset.euroTradingPair);
         //const list = tradeResponses.map(tradeResponse => new Trade(tradeResponse));
         //asset.trades = list; // this.groupTrades(list);
 
@@ -210,8 +209,8 @@ export class CoinService {
         }
     }
 
-    public async updateBalance(asset?: Asset): Promise<void> {
-        const balanceResponses = await this.bitvavoService.getBalance(asset?.symbol);
+    public async updateBalance(): Promise<void> {
+        const balanceResponses = await this.bitvavoService.getBalance(this.assetToMonitor?.symbol);
         // tslint:disable-next-line: prefer-const
         for (let balanceResponse of balanceResponses) {
             if (this.assetsInternal[balanceResponse.symbol]) {
@@ -233,7 +232,7 @@ export class CoinService {
     }
 
     private async updateTickerPrices(): Promise<void> {
-        const tickerPriceResponses = await this.bitvavoService.getTickerPrices();
+        const tickerPriceResponses = await this.bitvavoService.getTickerPrices(this.assetToMonitor?.euroTradingPair);
         // tslint:disable-next-line: prefer-const
         for (let tickerPriceResponse of tickerPriceResponses) {
             const tickerPrice = new TickerPrice(tickerPriceResponse.price);
