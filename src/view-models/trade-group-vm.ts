@@ -3,9 +3,14 @@ import { ITradeVm } from 'src/interfaces/i-trade-vm';
 export class TradeGroupVm implements ITradeVm {
     public children: ITradeVm[];
     public areRowDetailsOpen = false;
+    public profit = 0;
 
     public get hasChildren(): boolean {
         return this.children.length > 0;
+    }
+
+    public get goodCall(): boolean {
+        return this.profit > 0;
     }
 
     public get date(): Date | undefined {
@@ -36,6 +41,10 @@ export class TradeGroupVm implements ITradeVm {
 
     public get euroAmountAfterTrade(): number {
         return this.hasChildren ? this.children[0].euroAmountAfterTrade : 0;
+    }
+
+    public get totalEuroAmountWhenLastTrade(): number {
+        return this.hasChildren ? this.children[0].totalEuroAmountWhenLastTrade : 0;
     }
 
     constructor(public id: string, public name: string, public level: number) {

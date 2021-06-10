@@ -10,5 +10,8 @@ export interface ITradeVm {
     fee: number;
     altAmountAfterTrade: number;
     euroAmountAfterTrade: number;
+    totalEuroAmountWhenLastTrade: number;
+    profit: number;
+    goodCall: boolean;
     level: number;
 }

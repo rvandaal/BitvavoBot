@@ -8,9 +8,15 @@ export class TradeVm implements ITradeVm {
     public areRowDetailsOpen = false;
     public altAmountAfterTrade = 0;
     public euroAmountAfterTrade = 0;
+    public totalEuroAmountWhenLastTrade = 0;
+    public profit = 0;
 
     public get hasChildren(): boolean {
         return this.children.length > 0;
+    }
+
+    public get goodCall(): boolean {
+        return this.profit > 0;
     }
 
     constructor(public id: string, public trade: Trade, public level: number) {

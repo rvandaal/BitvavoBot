@@ -190,7 +190,6 @@ export class AppComponent implements OnInit {
         this.coinService.isBalanceUpdated = false;
         this.coinService.areTickerPricesUpdated = false;
         this.coinService.areTickerPrices24hUpdated = false;
-        this.updateTrades();
         break;
       case 3:
         this.coinService.isBalanceUpdated = false;
@@ -313,7 +312,66 @@ export class AppComponent implements OnInit {
       trade.euroAmountAfterTrade =
         previousTrade.euroAmountAfterTrade + previousTrade.amount * previousTrade.price + previousTrade.fee;
     }
+    this.updateTotalEuroAmountWhenLastTrade(assetVm);
+    this.updateTradeProfits(assetVm);
   }
+
+  private updateTotalEuroAmountWhenLastTrade(assetVm: AssetVm): void {
+    const currentPrice = assetVm.currentPrice;
+    this.tradeFlatList.forEach(t => {
+      t.totalEuroAmountWhenLastTrade = t.euroAmountAfterTrade + t.altAmountAfterTrade * currentPrice;
+    });
+  }
+
+  private updateTradeProfits(assetVm: AssetVm): void {
+    // loop door jaren, maanden, dagen, decisions, leafs
+    // hou van alle levels de previous bij
+    let previousYear: ITradeVm | undefined;
+    let previousMonth: ITradeVm | undefined;
+    let previousDay: ITradeVm | undefined;
+    let previousDecision: ITradeVm | undefined;
+    let previousTrade: ITradeVm | undefined;
+
+    for (let year of this.tradeGroupRoot.children) {
+      if (previousYear) {
+        previousYear.profit = previousYear.totalEuroAmountWhenLastTrade - year.totalEuroAmountWhenLastTrade;
+      }
+      previousYear = year;
+      for (let month of year.children) {
+        if (previousMonth) {
+          previousMonth.profit = previousMonth.totalEuroAmountWhenLastTrade - month.totalEuroAmountWhenLastTrade;
+        }
+        previousMonth = month;
+        for (let day of month.children) {
+          if (previousDay) {
+            previousDay.profit = previousDay.totalEuroAmountWhenLastTrade - day.totalEuroAmountWhenLastTrade;
+          }
+          previousDay = day;
+          for (let decision of day.children) {
+            if (previousDecision) {
+              previousDecision.profit = previousDecision.totalEuroAmountWhenLastTrade - decision.totalEuroAmountWhenLastTrade;
+            }
+            previousDecision = decision;
+            for (let trade of decision.children) {
+              if (previousTrade) {
+                previousTrade.profit = previousTrade.totalEuroAmountWhenLastTrade - trade.totalEuroAmountWhenLastTrade;
+              }
+              previousTrade = trade;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // private setGoodCall(trade: ITradeVm) {
+  //   for (let child of trade.children) {
+  //     if (child) {
+  //       child.goodCall = child.totalEuroAmountWhenLastTrade > year.totalEuroAmountWhenLastTrade;
+  //     }
+  //     child = year;
+  //   }
+  // }
 
   private syncOpenOrders(): void {
     // Check asset.euroMarket.openOrders en sync deze met assetVm.marketVm.openOrdersVm

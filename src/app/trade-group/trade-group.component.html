@@ -2,13 +2,14 @@
     <table class="table table-sm flex-fill">
       <thead *ngIf="viewModel.level === 0">
         <tr>
-          <th scope="col" style="width: 28%">ID</th>
-          <th scope="col" style="width: 12%">Tijd</th>
-          <th scope="col" style="width: 12%">Hoeveelheid</th>
-          <th scope="col" style="width: 12%">Gem. Prijs</th>
-          <th scope="col" style="width: 12%">Fee</th>
-          <th scope="col" style="width: 12%">Aantal alts</th>
-          <th scope="col" style="width: 12%">Aantal euros</th>
+          <th scope="col" style="width: 28%">Datum</th>
+          <th scope="col" style="width: 10%">Tijd</th>
+          <th scope="col" style="width: 10%">Hoeveelheid</th>
+          <th scope="col" style="width: 10%">Gem. Prijs</th>
+          <th scope="col" style="width: 10%">Fee</th>
+          <th scope="col" style="width: 10%">Aantal alts</th>
+          <th scope="col" style="width: 10%">Aantal euros</th>
+          <th scope="col" style="width: 12%">Huidige waarde als je gestopt was</th>
         </tr>
       </thead>
       <tbody>
@@ -16,12 +17,13 @@
           <tr (click)="child.toggleRowDetails()">
             <td style="width: 28%" *ngIf="child.hasChildren"><span [style.marginLeft.px]="(child.level - 1) * 20">{{child.name}}</span></td>
             <td style="width: 28%" *ngIf="!child.hasChildren"></td>
-            <td style="width: 12%">Time: {{child.date | date: 'H:mm'}}</td>
-            <td style="width: 12%">Amount: {{child.amount | number: '0.2-2'}}</td>
-            <td style="width: 12%">Price: {{child.price | number: '0.2-2'}}</td>
-            <td style="width: 12%">Fee: {{child.fee | number: '0.2-2'}}</td>
-            <td style="width: 12%">Alts: {{child.altAmountAfterTrade | number: '0.2-2'}}</td>
-            <td style="width: 12%">Euros: {{child.euroAmountAfterTrade | number: '0.2-2'}}</td>
+            <td style="width: 10%">{{child.date | date: 'H:mm'}}</td>
+            <td style="width: 10%">{{child.amount | number: '0.2-2'}}</td>
+            <td style="width: 10%">{{child.price | number: '0.2-2'}}</td>
+            <td style="width: 10%">{{child.fee | number: '0.2-2'}}</td>
+            <td style="width: 10%">{{child.altAmountAfterTrade | number: '0.2-2'}}</td>
+            <td style="width: 10%">{{child.euroAmountAfterTrade | number: '0.2-2'}}</td>
+            <td style="width: 12%"><span class="profit" [ngClass]="child.profit > 0 ? 'positive' : 'negative'">{{child.totalEuroAmountWhenLastTrade | number: '0.0-0'}} <span *ngIf="child.profit !== 0">({{child.profit | number: '0.0-0'}})</span></span></td>
           </tr>
           <tr *ngIf="child.areRowDetailsOpen">
             <td colspan="10">
