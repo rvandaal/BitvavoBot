@@ -57,6 +57,7 @@ export class AppComponent implements OnInit {
   public set selectedAssetForTransactions(value) {
     if (this.selectedAssetForTransactionsInternal !== value) {
       this.selectedAssetForTransactionsInternal = value;
+      this.tradeGroupRoot = new TradeGroupVm('root', 'root', 0);
       this.updateTrades();
     }
   }
@@ -72,7 +73,7 @@ export class AppComponent implements OnInit {
       const ar = a.relativeChange;
       //return !br && !ar ? b.change24h - a.change24h : br && !ar ? 1 : !br && ar ? -1 : br && ar ? br - ar : 0;
       //return b.numberOfSubsequentIncreasements - a.numberOfSubsequentIncreasements;
-      return b.totalAmount - a.totalAmount;
+      return b.availablePlusInOrderAmount - a.availablePlusInOrderAmount;
     };
     this.coinService.notifications$.subscribe({
       next: () => {
@@ -93,6 +94,7 @@ export class AppComponent implements OnInit {
       await this.coinService.start();
       setTimeout(() => {
         this.onTabChange();
+        this.selectedAssetForTransactions = this.assets.find(a => a.symbol === 'ETH');
       }, 2000);
     })();
   }
@@ -100,7 +102,6 @@ export class AppComponent implements OnInit {
   public get openOrderMarkets(): MarketVm[] {
     return this.assets.map(asset => asset.marketVm).filter(m => m.openOrders.length > 0);
   }
-
 
   public onBuyOrSellButtonClick(asset: AssetVm, isBuy: boolean): void {
     let tradeAmount = this.tradeAmount ? +this.tradeAmount : undefined;
@@ -196,8 +197,6 @@ export class AppComponent implements OnInit {
         this.coinService.areTickerPricesUpdated = false;
         this.coinService.areTickerPrices24hUpdated = false;
         break;
-
-
     }
   }
 
@@ -247,6 +246,7 @@ export class AppComponent implements OnInit {
   private updateTradeVms(assetVm: AssetVm): void {
     // asset.trades are not grouped. Group them in the viewmodel.
     const trades = assetVm.asset.trades;
+    let firstMonth = true;
     // tslint:disable-next-line: prefer-const
     for (let trade of trades) {
       const year = trade.date.getFullYear().toString();
@@ -264,6 +264,7 @@ export class AppComponent implements OnInit {
         tradeYearVm = new TradeGroupVm(year, yearString, 1);
         this.tradeGroupRoot.children.push(tradeYearVm);
       }
+      tradeYearVm.areRowDetailsOpen = true;
       let tradeMonthVm = tradeYearVm.children.find(m => m.id === month);
       if (!tradeMonthVm) {
         const monthString = this.datePipe.transform(trade.date, 'MMM');
@@ -271,6 +272,10 @@ export class AppComponent implements OnInit {
           return;
         }
         tradeMonthVm = new TradeGroupVm(month, monthString, 2);
+        if (firstMonth) {
+          tradeMonthVm.areRowDetailsOpen = true;
+        }
+        firstMonth = false;
         tradeYearVm.children.push(tradeMonthVm);
       }
       let tradeDayVm = tradeMonthVm.children.find(d => d.id === day);
@@ -308,24 +313,34 @@ export class AppComponent implements OnInit {
     console.log('trades: ', this.tradeGroupRoot);
     if (this.tradeFlatList.length) {
       const lastTrade = this.tradeFlatList[0];
-      lastTrade.altAmountAfterTrade = assetVm.asset.totalAmount;
-      lastTrade.euroAmountAfterTrade = euroAsset.totalAmount;
+      lastTrade.altAmountAfterTrade = assetVm.asset.availablePlusInOrderAmount;
+      lastTrade.cashAfterTrade = euroAsset.availablePlusInOrderAmount;
     }
     for (let i = 1; i < this.tradeFlatList.length; i++) {
       const trade = this.tradeFlatList[i];
       const previousTrade = this.tradeFlatList[i - 1];
       trade.altAmountAfterTrade = previousTrade.altAmountAfterTrade - previousTrade.amount;
-      trade.euroAmountAfterTrade =
-        previousTrade.euroAmountAfterTrade + previousTrade.amount * previousTrade.price + previousTrade.fee;
+      trade.cashAfterTrade =
+        previousTrade.cashAfterTrade + previousTrade.amount * previousTrade.price + previousTrade.fee;
     }
     this.updateTotalEuroAmountWhenLastTrade(assetVm);
     this.updateTradeProfits(assetVm);
+    // this.updateTargetPrice(assetVm);
   }
+
+  // private updateTargetPrice(assetVm: AssetVm): void {
+  //   const targetAltAmount = 10;
+  //   this.tradeFlatList.forEach(t => {
+  //     const deltaAmount = targetAltAmount - t.altAmountAfterTrade;
+  //     const available = this.coinService.euroAsset.totalAmount;
+  //     t.priceAtWhichTargetIsReached = available / deltaAmount;
+  //   });
+  // }
 
   private updateTotalEuroAmountWhenLastTrade(assetVm: AssetVm): void {
     const currentPrice = assetVm.currentPrice;
     this.tradeFlatList.forEach(t => {
-      t.totalEuroAmountWhenLastTrade = t.euroAmountAfterTrade + t.altAmountAfterTrade * currentPrice;
+      t.grandTotalInEuroWhenThisWasLastTrade = t.cashAfterTrade + t.altAmountAfterTrade * currentPrice;
     });
   }
 
@@ -335,20 +350,53 @@ export class AppComponent implements OnInit {
       undefined,
       undefined,
       undefined,
-      undefined
+      undefined // waarom 5 entries? o 5 levels diep?
     ];
+    const euroAmount = this.coinService.euroAsset.availablePlusInOrderAmount;
 
-    this.setTradeProfit(this.tradeGroupRoot, previous, 0);
+    //const maxAltAmount = euroAmount / currentPrice_L;
+
+    const cash_D = this.coinService.euroAsset.available; // = euroAsset.availablePlusInOrderAmount, want inOrder = 0 voor euro.
+    const altAmount_B = assetVm.available;
+    const currentPrice_L = assetVm.currentPrice;
+    const euroAmountWhenSellingAllNow = cash_D + altAmount_B * currentPrice_L;
+
+    this.setTradeProfit(this.tradeGroupRoot, previous, 0, euroAmountWhenSellingAllNow, cash_D, altAmount_B);
   }
 
-  private setTradeProfit(trade: ITradeVm, previous: any, previousIndex: number): void {
-    for (const child of trade.children) {
-      const previousChild = previous[previousIndex];
+  private setTradeProfit(
+    trade: ITradeVm,
+    previous: (ITradeVm | undefined)[],
+    previousIndex: number,
+    grandTotalInEurosAfterSellingAll: number,
+    cash_D: number,
+    altAmount_B: number
+  ): void {
+    for (const childTrade of trade.children) {
+      const A = childTrade.altAmountAfterTrade;
+      const C = childTrade.cashAfterTrade;
+      const K = childTrade.price;
+      const grandTotalInAltAfterTrade = A + C / K;
+
+
+
+      const previousChild = previous[previousIndex]; // previous is later in time than current
       if (previousChild) {
-        previousChild.profit = previousChild.totalEuroAmountWhenLastTrade - child.totalEuroAmountWhenLastTrade;
+        // For example: we're now at the second row, previous = first row (so previous is higher in table than current).
+        previousChild.profit = previousChild.grandTotalInEuroWhenThisWasLastTrade - childTrade.grandTotalInEuroWhenThisWasLastTrade;
+        //const grandTotalInEurosAfterSellingAll = coinAmount
+        previousChild.priceAtWhichTargetIsReachedAfterSellingAll = grandTotalInEurosAfterSellingAll / grandTotalInAltAfterTrade;
+        previousChild.priceAtWhichTargetIsReachedWithCurrentCash = cash_D / (grandTotalInAltAfterTrade - altAmount_B);
       }
-      previous[previousIndex] = child;
-      this.setTradeProfit(child, previous, previousIndex + 1);
+      previous[previousIndex] = childTrade;
+      //const deltaAmount = targetAltAmount - childTrade.altAmountAfterTrade;
+      //childTrade.priceAtWhichTargetIsReached = euroAmount / deltaAmount;
+      this.setTradeProfit(childTrade, previous, previousIndex + 1, grandTotalInEurosAfterSellingAll, cash_D, altAmount_B);
+
+      // Eerst bepalen: hoeveel coins op het einde van de vorige dag = Aantal coins + cash / koers van toen
+      // optie 1: priceAtWhichTargetIsReachedAfterSellingAll:
+      // huidige koers, aantal coins, cash
+      //
     }
   }
 

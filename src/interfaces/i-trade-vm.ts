@@ -9,9 +9,11 @@ export interface ITradeVm {
     price: number;
     fee: number;
     altAmountAfterTrade: number;
-    euroAmountAfterTrade: number;
-    totalEuroAmountWhenLastTrade: number;
+    cashAfterTrade: number;
+    grandTotalInEuroWhenThisWasLastTrade: number;
     profit: number;
     goodCall: boolean;
+    priceAtWhichTargetIsReachedAfterSellingAll: number;
+    priceAtWhichTargetIsReachedWithCurrentCash: number;
     level: number;
 }

@@ -29,7 +29,7 @@
               </thead>
               <tbody>
                 <ng-container *ngFor="let asset of assets; index as i">
-                  <tr *ngIf="showAllCoins || asset.totalAmount > 0" (click)="toggleRowDetails(asset)">
+                  <tr *ngIf="showAllCoins || asset.availablePlusInOrderAmount > 0" (click)="toggleRowDetails(asset)">
                     <th scope="row" style="width: 5%">{{ i + 1 }}</th>
                     <td style="width: 5%">
                       <i style="margin: -4px 0 0 0" class="icn" [ngClass]="'icn-' + asset.symbol.toLowerCase()"></i>
@@ -39,7 +39,7 @@
                     <td style="width: 5%"><span class="change24h" [ngClass]="asset.change24h > 0 ? 'positive' : 'negative'">{{ asset.change24h | number: '0.2-2' }}%</span></td>
                     <td style="width: 5%"><span class="relativeChange" *ngIf="asset.relativeChange" [ngClass]="asset.relativeChange > 0 ? 'positive' : 'negative'">{{ asset.relativeChange | number: '0.2-2' }}%</span></td>
                     <td style="width: 10%"><span class="numberOfSubsequentIncreasements">{{ asset.numberOfSubsequentIncreasements | number: '0.0-0' }}</span></td>
-                    <td style="width: 10%"><span *ngIf="asset.totalAmount > 0">{{ asset.totalAmount | number: '0.0-4' }} <span class="symbol">{{ asset.symbol }}</span></span></td>
+                    <td style="width: 10%"><span *ngIf="asset.availablePlusInOrderAmount > 0">{{ asset.availablePlusInOrderAmount | number: '0.0-4' }} <span class="symbol">{{ asset.symbol }}</span></span></td>
                     <td style="width: 10%"><span *ngIf="asset.currentValue > 0">{{ asset.currentValue| number: '0.2-2' }} <span class="symbol">EUR</span></span></td>
                     <td style="width: 10%"><span *ngIf="asset.investment !== 0">{{ asset.investment| number: '0.2-2' }} <span class="symbol">EUR</span></span></td>
                     <td style="width: 5%">
@@ -53,7 +53,7 @@
                       </button>
                     </td>
                   </tr>
-                  <tr *ngIf="asset.areRowDetailsOpen && (showAllCoins || asset.totalAmount > 0)">
+                  <tr *ngIf="asset.areRowDetailsOpen && (showAllCoins || asset.availablePlusInOrderAmount > 0)">
                     <th scope="row" style="width: 5%"></th>
                     <td scope="row" style="width: 5%"></td>
                     <td colspan="8">

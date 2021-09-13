@@ -7,9 +7,11 @@ export class TradeVm implements ITradeVm {
     public children: ITradeVm[];
     public areRowDetailsOpen = false;
     public altAmountAfterTrade = 0;
-    public euroAmountAfterTrade = 0;
-    public totalEuroAmountWhenLastTrade = 0;
+    public cashAfterTrade = 0;
+    public grandTotalInEuroWhenThisWasLastTrade = 0;
     public profit = 0;
+    public priceAtWhichTargetIsReachedAfterSellingAll = 0;
+    public priceAtWhichTargetIsReachedWithCurrentCash = 0;
 
     public get hasChildren(): boolean {
         return this.children.length > 0;

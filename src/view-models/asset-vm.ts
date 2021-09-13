@@ -51,8 +51,8 @@ export class AssetVm {
         return this.asset.euroTradingPair;
     }
 
-    public get totalAmount(): number {
-        return this.asset.totalAmount;
+    public get availablePlusInOrderAmount(): number {
+        return this.asset.availablePlusInOrderAmount;
     }
 
     public get currentValue(): number {

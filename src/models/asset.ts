@@ -67,12 +67,12 @@ export class Asset {
         return this.symbol + '-EUR';
     }
 
-    public get totalAmount(): number {
+    public get availablePlusInOrderAmount(): number {
         return this.available + this.inOrder;
     }
 
     public get currentValueInEuro(): number {
-        return this.totalAmount * this.currentPrice;
+        return this.availablePlusInOrderAmount * this.currentPrice;
     }
 
     public get change24h(): number {

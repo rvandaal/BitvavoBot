@@ -4,6 +4,8 @@ export class TradeGroupVm implements ITradeVm {
     public children: ITradeVm[];
     public areRowDetailsOpen = false;
     public profit = 0;
+    public priceAtWhichTargetIsReachedAfterSellingAll = 0;
+    public priceAtWhichTargetIsReachedWithCurrentCash = 0;
 
     public get hasChildren(): boolean {
         return this.children.length > 0;
@@ -39,12 +41,12 @@ export class TradeGroupVm implements ITradeVm {
         return this.hasChildren ? this.children[0].altAmountAfterTrade : 0;
     }
 
-    public get euroAmountAfterTrade(): number {
-        return this.hasChildren ? this.children[0].euroAmountAfterTrade : 0;
+    public get cashAfterTrade(): number {
+        return this.hasChildren ? this.children[0].cashAfterTrade : 0;
     }
 
-    public get totalEuroAmountWhenLastTrade(): number {
-        return this.hasChildren ? this.children[0].totalEuroAmountWhenLastTrade : 0;
+    public get grandTotalInEuroWhenThisWasLastTrade(): number {
+        return this.hasChildren ? this.children[0].grandTotalInEuroWhenThisWasLastTrade : 0;
     }
 
     constructor(public id: string, public name: string, public level: number) {
